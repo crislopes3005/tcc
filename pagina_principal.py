@@ -102,8 +102,9 @@ st.divider()
 # =========================
 df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 
-st.write(df_participantes['Sexo'].unique())
-st.write(df_participantes['Sexo'].dtype)
+
+st.write(df_participantes['sex_final'].unique())
+st.write(df_participantes['sex_final'].dtype)
 
 
 
