@@ -102,6 +102,8 @@ st.divider()
 # =========================
 df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 
+st.write(df_participantes.columns.tolist())
+
 # =========================
 # FUNÇÃO GRÁFICO
 # =========================
