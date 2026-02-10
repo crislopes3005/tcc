@@ -17,7 +17,7 @@ st.set_page_config(
 # =========================
 # CARREGAR DADOS
 # =========================
-df = pd.read_csv('df_final.csv')
+df = pd.read_csv('df_final.csv', sep=';')
 
 # =========================
 # TÍTULO
