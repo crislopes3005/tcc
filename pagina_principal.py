@@ -108,8 +108,9 @@ df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 # =========================
 def grafico_contagem(df, coluna, titulo):
 
-    contagem = df[coluna].value_counts().reset_index()
+    df_temp = df.dropna(subset=[coluna])
 
+    contagem = df_temp[coluna].value_counts().reset_index()
     contagem.columns = [coluna, 'Participantes']
 
     fig = px.bar(
@@ -121,6 +122,11 @@ def grafico_contagem(df, coluna, titulo):
     )
 
     fig.update_traces(textposition='outside')
+
+    fig.update_layout(
+        height=500,
+        margin=dict(t=80)
+    )
 
     return fig
 
