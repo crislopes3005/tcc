@@ -103,22 +103,14 @@ st.divider()
 df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 
 
-st.write(df_participantes['sex_final'].unique())
-st.write(df_participantes['sex_final'].dtype)
-
-
-
 # =========================
 # FUNÇÃO GRÁFICO
 # =========================
 def grafico_contagem(df, coluna, titulo):
 
-    contagem = (
-        df[coluna]
-        .value_counts()
-        .reset_index()
-        .rename(columns={'index': coluna, coluna: 'Participantes'})
-    )
+    contagem = df[coluna].value_counts().reset_index()
+
+    contagem.columns = [coluna, 'Participantes']
 
     fig = px.bar(
         contagem,
@@ -131,6 +123,7 @@ def grafico_contagem(df, coluna, titulo):
     fig.update_traces(textposition='outside')
 
     return fig
+
 
 # =========================
 # GRÁFICOS
