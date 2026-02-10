@@ -153,7 +153,7 @@ with col3:
 
 with col4:
     st.plotly_chart(
-        grafico_contagem(df_participantes, 'estado', 'Participantes por estado'),
+        grafico_contagem(df_participantes, 'siglaUf', 'Participantes por estado'),
         use_container_width=True
     )
 
