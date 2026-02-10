@@ -134,7 +134,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     st.plotly_chart(
-        grafico_contagem(df_participantes, 'Sexo', 'Participantes por sexo'),
+        grafico_contagem(df_participantes, 'sex_final', 'Participantes por sexo'),
         use_container_width=True
     )
 
