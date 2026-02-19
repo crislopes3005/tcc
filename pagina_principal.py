@@ -15,9 +15,27 @@ st.set_page_config(
 )
 
 # =========================
-# CARREGAR DADOS
+# CARREGAR DADOS (UPLOAD OU PADRÃO)
 # =========================
-df = pd.read_csv('df_final.csv', sep=';')
+
+st.sidebar.header("📂 Base de dados")
+
+arquivo_upload = st.sidebar.file_uploader(
+    "Envie um arquivo CSV para substituir a base padrão",
+    type=["csv"]
+)
+
+if arquivo_upload is not None:
+    try:
+        df = pd.read_csv(arquivo_upload, sep=';')
+        st.sidebar.success("Arquivo carregado com sucesso!")
+    except Exception as e:
+        st.sidebar.error("Erro ao carregar o arquivo.")
+        st.sidebar.write(e)
+        st.stop()
+else:
+    df = pd.read_csv('df_final.csv', sep=';')
+
 
 # =========================
 # TÍTULO
