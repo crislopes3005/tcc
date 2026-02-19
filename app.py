@@ -51,6 +51,7 @@ st.markdown('# Análise de representatividade - Plataforma Brasil Participativo 
 # =========================
 # FILTROS SIDEBAR
 # =========================
+st.sidebar.header("🔎 Filtros")
 escolha = st.sidebar.selectbox("Deseja filtrar os resultados?", ['Não', 'Sim'])
 
 df_filtrado = df.copy()
