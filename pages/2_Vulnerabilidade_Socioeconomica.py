@@ -15,23 +15,79 @@ st.set_page_config(
 )
 
 # =========================
-# CARREGAR DADOS (mesma lógica da página principal)
+# USAR BASE DA PÁGINA PRINCIPAL
 # =========================
 if "df" not in st.session_state:
-    st.warning("Nenhuma base foi carregada. Volte à página principal.")
+    st.warning("Nenhuma base foi carregada. Acesse a página principal primeiro.")
     st.stop()
 
 df = st.session_state["df"]
 
+# =========================
+# FILTROS SIDEBAR (REPLICADOS)
+# =========================
+st.sidebar.header("🔎 Filtros")
+
+df_filtrado = df.copy()
+
+escolha = st.sidebar.selectbox(
+    "Deseja filtrar os resultados?",
+    ['Não', 'Sim']
+)
+
+if escolha == 'Sim':
+
+    # Processo
+    lista_processos = df['processo'].dropna().unique().tolist()
+    lista_processos.insert(0, "Marcar Todos")
+
+    processo_selecionado = st.sidebar.selectbox(
+        "Selecione um processo:",
+        lista_processos
+    )
+
+    if processo_selecionado != "Marcar Todos":
+        df_filtrado = df_filtrado[
+            df_filtrado['processo'] == processo_selecionado
+        ]
+
+    # Estado da proposta
+    lista_status = df_filtrado['state'].dropna().unique().tolist()
+    lista_status.insert(0, "Marcar Todos")
+
+    status_selecionado = st.sidebar.selectbox(
+        "Selecione o estado da proposta:",
+        lista_status
+    )
+
+    if status_selecionado != "Marcar Todos":
+        df_filtrado = df_filtrado[
+            df_filtrado['state'] == status_selecionado
+        ]
+
+    # Cluster
+    lista_cluster = df_filtrado['cluster_k3'].dropna().unique().tolist()
+    lista_cluster.insert(0, "Marcar Todos")
+
+    cluster_selecionado = st.sidebar.selectbox(
+        "Selecione a classificação do proponente:",
+        lista_cluster
+    )
+
+    if cluster_selecionado != "Marcar Todos":
+        df_filtrado = df_filtrado[
+            df_filtrado['cluster_k3'] == cluster_selecionado
+        ]
 
 # =========================
-# FILTRO: APENAS VULNERÁVEIS
+# FILTRO DE VULNERABILIDADE
 # =========================
-df_vulneraveis = df[
+df_vulneraveis = df_filtrado[
+    (df_vulneraveis = df[
     (df['cadunico'] == 'Cadastrado')
-]
+])
+].copy()
 
-# Remover duplicidade de participantes
 df_vulneraveis = df_vulneraveis.drop_duplicates(subset='id_autor')
 
 # =========================
@@ -42,9 +98,9 @@ st.markdown('# Análise dos Participantes Socioeconomicamente Vulneráveis')
 st.write("""
 <div style="text-align: justify">
 
-Esta seção apresenta a caracterização socioeconômica dos participantes considerados
-em situação de vulnerabilidade social, identificados a partir do CadÚnico ou como
-beneficiários do Programa Bolsa Família.
+Esta seção apresenta a caracterização socioeconômica dos participantes
+identificados como cadastrados no CadÚnico ou beneficiários do Programa
+Bolsa Família, considerando os filtros aplicados.
 
 </div>
 """, unsafe_allow_html=True)
@@ -56,26 +112,30 @@ st.divider()
 # =========================
 col1, col2 = st.columns(2)
 
+total_participantes = df_filtrado['id_autor'].nunique()
+total_vulneraveis = df_vulneraveis['id_autor'].nunique()
+
 with col1:
-    st.subheader("Número de participantes vulneráveis")
-    st.metric("", df_vulneraveis['id_autor'].nunique())
+    st.subheader("Participantes vulneráveis")
+    st.metric("", total_vulneraveis)
 
 with col2:
-    percentual = round(
-        (df_vulneraveis['id_autor'].nunique() /
-         df['id_autor'].nunique()) * 100, 2
-    )
-    st.subheader("Percentual sobre o total de participantes")
+    percentual = round((total_vulneraveis / total_participantes) * 100, 2) if total_participantes > 0 else 0
+    st.subheader("Percentual sobre o total filtrado")
     st.metric("", f"{percentual}%")
 
 st.divider()
 
+if df_vulneraveis.empty:
+    st.warning("Nenhum participante vulnerável encontrado para os filtros aplicados.")
+    st.stop()
+
 # =========================
 # FUNÇÃO GRÁFICO
 # =========================
-def grafico_contagem(df, coluna, titulo):
+def grafico_contagem(df_base, coluna, titulo):
 
-    df_temp = df.dropna(subset=[coluna])
+    df_temp = df_base.dropna(subset=[coluna])
 
     contagem = df_temp[coluna].value_counts().reset_index()
     contagem.columns = [coluna, 'Participantes']
@@ -101,7 +161,6 @@ def grafico_contagem(df, coluna, titulo):
 # =========================
 # GRÁFICOS
 # =========================
-
 col1, col2 = st.columns(2)
 
 with col1:
