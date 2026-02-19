@@ -27,7 +27,7 @@ arquivo_upload = st.sidebar.file_uploader(
 
 if arquivo_upload is not None:
     try:
-        df = pd.read_csv(arquivo_upload, sep=';')
+        df = pd.read_csv(arquivo_upload, sep=';', encoding='latin1', engine='python')
         st.sidebar.success("Arquivo carregado com sucesso!")
     except Exception as e:
         st.sidebar.error("Erro ao carregar o arquivo.")
