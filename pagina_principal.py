@@ -27,15 +27,21 @@ arquivo_upload = st.sidebar.file_uploader(
 
 if arquivo_upload is not None:
     try:
-        df = pd.read_csv(arquivo_upload, sep=';', encoding='latin1', engine='python')
+        try:
+            df = pd.read_csv(arquivo_upload, sep=';', encoding='utf-8')
+        except UnicodeDecodeError:
+            arquivo_upload.seek(0)
+            df = pd.read_csv(arquivo_upload, sep=';', encoding='latin1')
+
         st.sidebar.success("Arquivo carregado com sucesso!")
+        st.session_state["df"] = df
+
     except Exception as e:
         st.sidebar.error("Erro ao carregar o arquivo.")
-        st.sidebar.write(e)
         st.stop()
 else:
-    df = pd.read_csv('df_final.csv', sep=';')
-
+    df = pd.read_csv('df_final.csv', sep=';', encoding='utf-8')
+    st.session_state["df"] = df
 
 # =========================
 # TÍTULO
