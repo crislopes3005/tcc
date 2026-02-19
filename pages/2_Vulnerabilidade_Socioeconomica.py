@@ -28,8 +28,7 @@ df = st.session_state["df"]
 # FILTRO: APENAS VULNERÁVEIS
 # =========================
 df_vulneraveis = df[
-    (df['cadunico'] == 'Sim') |
-    (df['familiaBeneficiariaPBF'] == 'Sim')
+    (df['cadunico'] == 'Cadastrado')
 ]
 
 # Remover duplicidade de participantes
