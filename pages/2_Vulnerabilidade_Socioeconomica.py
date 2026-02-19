@@ -82,13 +82,13 @@ if escolha == 'Sim':
 # =========================
 # FILTRO DE VULNERABILIDADE
 # =========================
+
 df_vulneraveis = df_filtrado[
-    (df_vulneraveis = df[
-    (df['cadunico'] == 'Cadastrado')
-])
+    df_filtrado['cadunico'].astype(str).str.strip().str.lower() == 'cadastrado'
 ].copy()
 
 df_vulneraveis = df_vulneraveis.drop_duplicates(subset='id_autor')
+
 
 # =========================
 # TÍTULO
