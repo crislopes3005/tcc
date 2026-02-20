@@ -185,7 +185,7 @@ with col1:
         contagem,
         names="Sexo",
         values="Participantes",
-        hole=0.4
+        hole=0
     )
 
     cores = {
@@ -220,7 +220,7 @@ with col2:
         x="Faixa",
         y="Participantes",
         color="cor",
-        #color_discrete_map="identity"
+        color_discrete_map="identity"
     )
 
     fig.update_layout(title="Faixa etária", showlegend=False)
@@ -244,7 +244,7 @@ with col3:
         x="Regiao",
         y="Participantes",
         color="cor",
-        #color_discrete_map="identity"
+        color_discrete_map="identity"
     )
 
     fig.update_layout(title="Região", showlegend=False)
@@ -268,7 +268,7 @@ with col4:
         x="UF",
         y="Participantes",
         color="cor",
-        #color_discrete_map="identity"
+        color_discrete_map="identity"
     )
 
     fig.update_layout(title="Estado (UF)", showlegend=False)
@@ -293,7 +293,7 @@ fig = px.bar(
     x="Ocupacao",
     y="Participantes",
     color="cor",
-    #color_discrete_map="identity"
+    color_discrete_map="identity"
 )
 
 fig.update_layout(title="Ocupação", showlegend=False)
