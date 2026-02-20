@@ -131,91 +131,129 @@ if df_vulneraveis.empty:
     st.stop()
 
 # =========================
-# FUNÇÃO GRÁFICO
+# GRÁFICOS REORGANIZADOS
 # =========================
-def grafico_contagem(df_base, coluna, titulo):
 
-    df_temp = df_base.dropna(subset=[coluna])
+def grafico_barra_destacado(df_base, coluna, destaque_lista, titulo):
+    contagem = df_base[coluna].value_counts().reset_index()
+    contagem.columns = [coluna, "Participantes"]
+    contagem = contagem.sort_values("Participantes", ascending=False)
 
-    contagem = df_temp[coluna].value_counts().reset_index()
-    contagem.columns = [coluna, 'Participantes']
+    contagem["cor"] = contagem[coluna].apply(
+        lambda x: "#5B7C99" if x in destaque_lista else "#D3D3D3"
+    )
 
     fig = px.bar(
         contagem,
         x=coluna,
-        y='Participantes',
-        text='Participantes',
-        title=titulo
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity",
+        text="Participantes"
     )
-
-    fig.update_traces(textposition='outside')
 
     fig.update_layout(
-        height=500,
-        margin=dict(t=80)
+        title=titulo,
+        showlegend=False,
+        xaxis=dict(categoryorder="total descending")
     )
 
-    return fig
+    fig.update_traces(textposition="outside")
+
+    st.plotly_chart(fig, use_container_width=True)
 
 
-# =========================
-# GRÁFICOS
-# =========================
-col1, col2 = st.columns(2)
+def grafico_pizza_destacado(df_base, coluna, destaque_valor, titulo):
+    contagem = df_base[coluna].value_counts().reset_index()
+    contagem.columns = [coluna, "Participantes"]
 
-with col1:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'familiaBeneficiariaPBF', 'Beneficiários do PBF'),
-        use_container_width=True
+    cores = []
+    for valor in contagem[coluna]:
+        if valor == destaque_valor:
+            cores.append("#5B7C99")
+        else:
+            cores.append("#D3D3D3")
+
+    fig = px.pie(
+        contagem,
+        names=coluna,
+        values="Participantes",
+        hole=0.4
     )
 
-with col2:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'racaCor', 'Participantes por raça/cor'),
-        use_container_width=True
+    fig.update_traces(
+        marker=dict(colors=cores),
+        textinfo="percent+label"
     )
 
-col3, col4 = st.columns(2)
+    fig.update_layout(title=titulo)
 
-with col3:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'gpte', 'Grupo populacional tradicional/específico'),
-        use_container_width=True
-    )
+    st.plotly_chart(fig, use_container_width=True)
 
-with col4:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'sex_final', 'Participantes por sexo'),
-        use_container_width=True
-    )
 
-col5, col6 = st.columns(2)
+# 1️⃣ Beneficiários PBF (pizza)
+grafico_pizza_destacado(
+    df_vulneraveis,
+    "familiaBeneficiariaPBF",
+    True,
+    "Beneficiários do PBF"
+)
 
-with col5:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'ocupacao_grupo', 'Participantes por ocupação'),
-        use_container_width=True
-    )
+# 2️⃣ Sexo (pizza)
+grafico_pizza_destacado(
+    df_vulneraveis,
+    "sex_final",
+    "Feminino",
+    "Sexo"
+)
 
-with col6:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'regiao', 'Participantes por região'),
-        use_container_width=True
-    )
+# 3️⃣ Raça/Cor
+grafico_barra_destacado(
+    df_vulneraveis,
+    "racaCor",
+    ["Preta", "Parda", "Indígena"],
+    "Raça/Cor"
+)
 
-col7, col8 = st.columns(2)
+# 4️⃣ Grupo Familiar (GPTE)
+grafico_barra_destacado(
+    df_vulneraveis,
+    "gpte",
+    ["Indígena", "Quilombola"],
+    "Grupo Familiar (GPTE)"
+)
 
-with col7:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'faixaRendaFamiliarPerCapita', 'Renda familiar per capita'),
-        use_container_width=True
-    )
+# 5️⃣ Ocupação
+grafico_barra_destacado(
+    df_vulneraveis,
+    "ocupacao_grupo",
+    ["nao_informado", "nao_especificado"],
+    "Ocupação"
+)
 
-with col8:
-    st.plotly_chart(
-        grafico_contagem(df_vulneraveis, 'faixaEtaria', 'Participantes por faixa etária'),
-        use_container_width=True
-    )
+# 6️⃣ Renda per capita
+grafico_barra_destacado(
+    df_vulneraveis,
+    "faixaRendaFamiliarPerCapita",
+    ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
+    "Renda Familiar per Capita"
+)
+
+# 7️⃣ Região
+grafico_barra_destacado(
+    df_vulneraveis,
+    "regiao",
+    ["N", "NE", "Norte", "Nordeste"],
+    "Região"
+)
+
+# 8️⃣ Faixa Etária
+grafico_barra_destacado(
+    df_vulneraveis,
+    "faixaEtaria",
+    ["25 a 44 anos"],
+    "Faixa Etária"
+)
 
 # =========================
 # RODAPÉ
