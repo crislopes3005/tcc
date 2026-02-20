@@ -129,6 +129,40 @@ st.divider()
 # =========================
 df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 
+# =========================
+# GRÁFICO PIZZA - SEXO
+# =========================
+
+df_sexo = df_participantes.dropna(subset=["sex_final"])
+
+contagem = df_sexo["sex_final"].value_counts().reset_index()
+contagem.columns = ["Sexo", "Participantes"]
+
+fig = px.pie(
+    contagem,
+    names="Sexo",
+    values="Participantes",
+    hole=0.4
+)
+
+# Definição das cores
+cores = {
+    "Masculino": "#B0B0B0",   # cinza
+    "Feminino": "#5B7C99"     # azul acinzentado
+}
+
+fig.update_traces(
+    marker=dict(
+        colors=[cores.get(sexo, "#CCCCCC") for sexo in contagem["Sexo"]]
+    ),
+    textinfo="percent+label"
+)
+
+fig.update_layout(
+    title="Participantes por sexo",
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 # =========================
 # FUNÇÃO GRÁFICO
