@@ -168,9 +168,6 @@ st.plotly_chart(fig, use_container_width=True)
 # GRÁFICOS ORGANIZADOS
 # =========================
 
-# -------------------------
-# COLUNAS 1 A 4
-# -------------------------
 col1, col2 = st.columns(2)
 
 # =========================
@@ -211,6 +208,8 @@ with col2:
     contagem = df_participantes["faixaEtaria"].value_counts().reset_index()
     contagem.columns = ["Faixa", "Participantes"]
 
+    contagem = contagem.sort_values("Participantes", ascending=False)
+
     contagem["cor"] = contagem["Faixa"].apply(
         lambda x: "#5B7C99" if x == "25 a 44 anos" else "#D3D3D3"
     )
@@ -223,7 +222,8 @@ with col2:
         color_discrete_map="identity"
     )
 
-    fig.update_layout(title="Faixa etária", showlegend=False)
+    fig.update_layout(title="Faixa etária", showlegend=False,  
+                      xaxis=dict(categoryorder="total descending"))
     st.plotly_chart(fig, use_container_width=True)
 
 col3, col4 = st.columns(2)
@@ -259,6 +259,8 @@ with col4:
     contagem = df_participantes["siglaUf"].value_counts().reset_index()
     contagem.columns = ["UF", "Participantes"]
 
+    contagem = contagem.sort_values("Participantes", ascending=False)
+
     contagem["cor"] = contagem["UF"].apply(
         lambda x: "#5B7C99" if x in estados_norte else "#D3D3D3"
     )
@@ -271,7 +273,8 @@ with col4:
         color_discrete_map="identity"
     )
 
-    fig.update_layout(title="Estado (UF)", showlegend=False)
+    fig.update_layout(title="Estado (UF)", showlegend=False,
+                     xaxis=dict(categoryorder="total descending"))
     st.plotly_chart(fig, use_container_width=True)
 
 
@@ -283,6 +286,8 @@ st.divider()
 
 contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
 contagem.columns = ["Ocupacao", "Participantes"]
+
+contagem = contagem.sort_values("Participantes", ascending=False)
 
 contagem["cor"] = contagem["Ocupacao"].apply(
     lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
@@ -296,7 +301,8 @@ fig = px.bar(
     color_discrete_map="identity"
 )
 
-fig.update_layout(title="Ocupação", showlegend=False)
+fig.update_layout(title="Ocupação", showlegend=False,
+                 xaxis=dict(categoryorder="total descending"))
 
 st.plotly_chart(fig, use_container_width=True)
 
