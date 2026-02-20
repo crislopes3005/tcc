@@ -52,27 +52,22 @@ def calcular_subindices(row):
     # ------------------------
     socio = 0
 
-    if row.get("Pessoa Cadastrada") == True:
+    if row.get("cadunico") == 'Cadastrado':
         socio += 1
 
-    if row.get("Cadastro atualizado") == True:
+    if row.get("faixaRendaFamiliarPerCapita") in ['De 0 até R$ 109', 'De R$ 109,01 até R$ 218']:
         socio += 1
 
-    if row.get("faixaRendaFamiliarPerCapita_codigo") in [1, 2]:
-        socio += 1
-
-    if row.get("familiaBeneficiariaPBF") == True:
-        socio += 1
 
     # ------------------------
     # 2️⃣ Dimensão Étnico-Racial
     # ------------------------
     etnico = 0
 
-    if row.get("racaCor_codigo") in [2, 4, 5]:
+    if row.get("racaCor") in ['Preta','Parda','Indígena']:
         etnico += 1
 
-    if row.get("gpte_codigo") not in [0, "000", None]:
+    if row.get("gpte_codigo") not in [0, "000", None, 'Nenhuma']:
         etnico += 1
 
     # ------------------------
@@ -80,10 +75,7 @@ def calcular_subindices(row):
     # ------------------------
     territorial = 0
 
-    if row.get("regiao") in ["Norte", "Nordeste"]:
-        territorial += 1
-
-    if row.get("caracteristicaDomicilio_codigo") == 2:
+    if row.get("regiao") in ["NO", "NE"]:
         territorial += 1
 
     # ------------------------
