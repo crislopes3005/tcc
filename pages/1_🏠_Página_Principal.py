@@ -130,30 +130,30 @@ st.divider()
 df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 
 # =========================
-# GRÁFICO PIZZA - SEXO
+# GRÁFICO PIZZA - cadunico
 # =========================
 
-df_sexo = df_participantes.dropna(subset=["sex_final"])
+df_cadunico = df_participantes.dropna(subset=["cadunico"])
 
-contagem = df_sexo["sex_final"].value_counts().reset_index()
-contagem.columns = ["Sexo", "Participantes"]
+contagem = df_cadunico["cadunico"].value_counts().reset_index()
+contagem.columns = ["Cadastro", "Participantes"]
 
 fig = px.pie(
     contagem,
-    names="Sexo",
+    names="Cadastro",
     values="Participantes",
     hole=0.4
 )
 
 # Definição das cores
 cores = {
-    "Masculino": "#B0B0B0",   # cinza
-    "Feminino": "#5B7C99"     # azul acinzentado
+    "Não cadastrado": "#B0B0B0",   # cinza
+    "Cadastrado": "#5B7C99"     # azul acinzentado
 }
 
 fig.update_traces(
     marker=dict(
-        colors=[cores.get(sexo, "#CCCCCC") for sexo in contagem["Sexo"]]
+        colors=[cores.get(cadunico, "#CCCCCC") for cadunico in contagem["cadunico"]]
     ),
     textinfo="percent+label"
 )
