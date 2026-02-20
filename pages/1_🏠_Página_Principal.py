@@ -220,7 +220,7 @@ with col2:
         x="Faixa",
         y="Participantes",
         color="cor",
-        color_discrete_map="identity"
+        #color_discrete_map="identity"
     )
 
     fig.update_layout(title="Faixa etária", showlegend=False)
@@ -236,7 +236,7 @@ with col3:
     contagem.columns = ["Regiao", "Participantes"]
 
     contagem["cor"] = contagem["Regiao"].apply(
-        lambda x: "#5B7C99" if x in ["NO", "NE", "Norte", "Nordeste"] else "#D3D3D3"
+        lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
     )
 
     fig = px.bar(
@@ -244,7 +244,7 @@ with col3:
         x="Regiao",
         y="Participantes",
         color="cor",
-        color_discrete_map="identity"
+        #color_discrete_map="identity"
     )
 
     fig.update_layout(title="Região", showlegend=False)
@@ -268,7 +268,7 @@ with col4:
         x="UF",
         y="Participantes",
         color="cor",
-        color_discrete_map="identity"
+        #color_discrete_map="identity"
     )
 
     fig.update_layout(title="Estado (UF)", showlegend=False)
@@ -293,7 +293,7 @@ fig = px.bar(
     x="Ocupacao",
     y="Participantes",
     color="cor",
-    color_discrete_map="identity"
+    #color_discrete_map="identity"
 )
 
 fig.update_layout(title="Ocupação", showlegend=False)
