@@ -165,86 +165,138 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# GRÁFICO PIZZA - SEXO
+# GRÁFICOS ORGANIZADOS
 # =========================
 
-df_sexo = df_participantes.dropna(subset=["sex_final"])
+# -------------------------
+# COLUNAS 1 A 4
+# -------------------------
+col1, col2, col3, col4 = st.columns(4)
 
-contagem = df_sexo["sex_final"].value_counts().reset_index()
-contagem.columns = ["Sexo", "Participantes"]
+# =========================
+# 1️⃣ SEXO (PIZZA)
+# =========================
+with col1:
+    df_sexo = df_participantes.dropna(subset=["sex_final"])
+    contagem = df_sexo["sex_final"].value_counts().reset_index()
+    contagem.columns = ["Sexo", "Participantes"]
 
-fig = px.pie(
+    fig = px.pie(
+        contagem,
+        names="Sexo",
+        values="Participantes",
+        hole=0.4
+    )
+
+    cores = {
+        "Masculino": "#B0B0B0",
+        "Feminino": "#5B7C99"
+    }
+
+    fig.update_traces(
+        marker=dict(
+            colors=[cores.get(sexo, "#CCCCCC") for sexo in contagem["Sexo"]]
+        ),
+        textinfo="percent+label"
+    )
+
+    fig.update_layout(title="Sexo")
+
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================
+# 2️⃣ FAIXA ETÁRIA (BARRA)
+# =========================
+with col2:
+    contagem = df_participantes["faixaEtaria"].value_counts().reset_index()
+    contagem.columns = ["Faixa", "Participantes"]
+
+    contagem["cor"] = contagem["Faixa"].apply(
+        lambda x: "#5B7C99" if x == "25 a 44 anos" else "#D3D3D3"
+    )
+
+    fig = px.bar(
+        contagem,
+        x="Faixa",
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity"
+    )
+
+    fig.update_layout(title="Faixa etária", showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================
+# 3️⃣ REGIÃO (BARRA)
+# =========================
+with col3:
+    contagem = df_participantes["regiao"].value_counts().reset_index()
+    contagem.columns = ["Regiao", "Participantes"]
+
+    contagem["cor"] = contagem["Regiao"].apply(
+        lambda x: "#5B7C99" if x in ["NO", "NE", "Norte", "Nordeste"] else "#D3D3D3"
+    )
+
+    fig = px.bar(
+        contagem,
+        x="Regiao",
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity"
+    )
+
+    fig.update_layout(title="Região", showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+# =========================
+# 4️⃣ UF (BARRA)
+# =========================
+with col4:
+    estados_norte = ["AC","AP","AM","PA","RO","RR","TO"]
+
+    contagem = df_participantes["siglaUf"].value_counts().reset_index()
+    contagem.columns = ["UF", "Participantes"]
+
+    contagem["cor"] = contagem["UF"].apply(
+        lambda x: "#5B7C99" if x in estados_norte else "#D3D3D3"
+    )
+
+    fig = px.bar(
+        contagem,
+        x="UF",
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity"
+    )
+
+    fig.update_layout(title="Estado (UF)", showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+
+
+# =========================
+# OCUPAÇÃO (LINHA FINAL)
+# =========================
+
+st.divider()
+
+contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
+contagem.columns = ["Ocupacao", "Participantes"]
+
+contagem["cor"] = contagem["Ocupacao"].apply(
+    lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
+)
+
+fig = px.bar(
     contagem,
-    names="Sexo",
-    values="Participantes",
-    hole=0
+    x="Ocupacao",
+    y="Participantes",
+    color="cor",
+    color_discrete_map="identity"
 )
 
-# Definição das cores
-cores = {
-    "Masculino": "#B0B0B0",   # cinza
-    "Feminino": "#5B7C99"     # azul acinzentado
-}
-
-fig.update_traces(
-    marker=dict(
-        colors=[cores.get(sexo, "#CCCCCC") for sexo in contagem["Sexo"]]
-    ),
-    textinfo="percent+label"
-)
-
-fig.update_layout(
-    title="Participantes por sexo",
-)
+fig.update_layout(title="Ocupação", showlegend=False)
 
 st.plotly_chart(fig, use_container_width=True)
-
-
-# =========================
-# GRÁFICOS
-# =========================
-
-col1, col2 = st.columns(2)
-
-with col1:
-    st.plotly_chart(
-        grafico_contagem(df_participantes, 'sex_final', 'Participantes por sexo'),
-        use_container_width=True
-    )
-
-with col2:
-    st.plotly_chart(
-        grafico_contagem(df_participantes, 'faixaEtaria', 'Participantes por faixa etária'),
-        use_container_width=True
-    )
-
-col3, col4 = st.columns(2)
-
-with col3:
-    st.plotly_chart(
-        grafico_contagem(df_participantes, 'regiao', 'Participantes por região'),
-        use_container_width=True
-    )
-
-with col4:
-    st.plotly_chart(
-        grafico_contagem(df_participantes, 'siglaUf', 'Participantes por estado'),
-        use_container_width=True
-    )
-
-col5, col6 = st.columns(2)
-
-with col5:
-    st.plotly_chart(
-        grafico_contagem(df_participantes, 'ocupacao_grupo', 'Participantes por ocupação'),
-        use_container_width=True
-    )
-
-with col6:
-    st.plotly_chart(
-        grafico_contagem(df_participantes, 'cadunico', 'Participantes no CadÚnico'),
-        use_container_width=True
-    )
 
 # =========================
 # RODAPÉ
