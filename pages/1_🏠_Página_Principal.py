@@ -165,31 +165,39 @@ fig.update_layout(
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# FUNÇÃO GRÁFICO
+# GRÁFICO PIZZA - SEXO
 # =========================
-def grafico_contagem(df, coluna, titulo):
 
-    df_temp = df.dropna(subset=[coluna])
+df_sexo = df_participantes.dropna(subset=["sex_final"])
 
-    contagem = df_temp[coluna].value_counts().reset_index()
-    contagem.columns = [coluna, 'Participantes']
+contagem = df_sexo["sex_final"].value_counts().reset_index()
+contagem.columns = ["Sexo", "Participantes"]
 
-    fig = px.bar(
-        contagem,
-        x=coluna,
-        y='Participantes',
-        text='Participantes',
-        title=titulo
-    )
+fig = px.pie(
+    contagem,
+    names="Sexo",
+    values="Participantes",
+    hole=0
+)
 
-    fig.update_traces(textposition='outside')
+# Definição das cores
+cores = {
+    "Masculino": "#B0B0B0",   # cinza
+    "Feminino": "#5B7C99"     # azul acinzentado
+}
 
-    fig.update_layout(
-        height=500,
-        margin=dict(t=80)
-    )
+fig.update_traces(
+    marker=dict(
+        colors=[cores.get(sexo, "#CCCCCC") for sexo in contagem["Sexo"]]
+    ),
+    textinfo="percent+label"
+)
 
-    return fig
+fig.update_layout(
+    title="Participantes por sexo",
+)
+
+st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
