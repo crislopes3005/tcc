@@ -131,7 +131,7 @@ if df_vulneraveis.empty:
     st.stop()
 
 # =========================
-# GRÁFICOS REORGANIZADOS
+# GRÁFICOS EM 2 COLUNAS
 # =========================
 
 def grafico_barra_destacado(df_base, coluna, destaque_lista, titulo):
@@ -160,19 +160,17 @@ def grafico_barra_destacado(df_base, coluna, destaque_lista, titulo):
 
     fig.update_traces(textposition="outside")
 
-    st.plotly_chart(fig, use_container_width=True)
+    return fig
 
 
 def grafico_pizza_destacado(df_base, coluna, destaque_valor, titulo):
     contagem = df_base[coluna].value_counts().reset_index()
     contagem.columns = [coluna, "Participantes"]
 
-    cores = []
-    for valor in contagem[coluna]:
-        if valor == destaque_valor:
-            cores.append("#5B7C99")
-        else:
-            cores.append("#D3D3D3")
+    cores = [
+        "#5B7C99" if valor == destaque_valor else "#D3D3D3"
+        for valor in contagem[coluna]
+    ]
 
     fig = px.pie(
         contagem,
@@ -188,73 +186,112 @@ def grafico_pizza_destacado(df_base, coluna, destaque_valor, titulo):
 
     fig.update_layout(title=titulo)
 
-    st.plotly_chart(fig, use_container_width=True)
+    return fig
 
 
-# 1️⃣ Beneficiários PBF (pizza)
-grafico_pizza_destacado(
-    df_vulneraveis,
-    "familiaBeneficiariaPBF",
-    True,
-    "Beneficiários do PBF"
-)
+# =========================
+# LINHAS DE GRÁFICOS (2 COLUNAS)
+# =========================
 
-# 2️⃣ Sexo (pizza)
-grafico_pizza_destacado(
-    df_vulneraveis,
-    "sex_final",
-    "Feminino",
-    "Sexo"
-)
+# 1️⃣ PBF | 2️⃣ Sexo
+col1, col2 = st.columns(2)
 
-# 3️⃣ Raça/Cor
-grafico_barra_destacado(
-    df_vulneraveis,
-    "racaCor",
-    ["Preta", "Parda", "Indígena"],
-    "Raça/Cor"
-)
+with col1:
+    st.plotly_chart(
+        grafico_pizza_destacado(
+            df_vulneraveis,
+            "familiaBeneficiariaPBF",
+            True,
+            "Beneficiários do PBF"
+        ),
+        use_container_width=True
+    )
 
-# 4️⃣ Grupo Familiar (GPTE)
-grafico_barra_destacado(
-    df_vulneraveis,
-    "gpte",
-    ["Indígena", "Quilombola"],
-    "Grupo Familiar (GPTE)"
-)
+with col2:
+    st.plotly_chart(
+        grafico_pizza_destacado(
+            df_vulneraveis,
+            "sex_final",
+            "Feminino",
+            "Sexo"
+        ),
+        use_container_width=True
+    )
 
-# 5️⃣ Ocupação
-grafico_barra_destacado(
-    df_vulneraveis,
-    "ocupacao_grupo",
-    ["nao_informado", "nao_especificado"],
-    "Ocupação"
-)
+# 3️⃣ Raça | 4️⃣ Grupo Familiar
+col3, col4 = st.columns(2)
 
-# 6️⃣ Renda per capita
-grafico_barra_destacado(
-    df_vulneraveis,
-    "faixaRendaFamiliarPerCapita",
-    ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
-    "Renda Familiar per Capita"
-)
+with col3:
+    st.plotly_chart(
+        grafico_barra_destacado(
+            df_vulneraveis,
+            "racaCor",
+            ["Preta", "Parda", "Indígena"],
+            "Raça/Cor"
+        ),
+        use_container_width=True
+    )
 
-# 7️⃣ Região
-grafico_barra_destacado(
-    df_vulneraveis,
-    "regiao",
-    ["N", "NE", "Norte", "Nordeste"],
-    "Região"
-)
+with col4:
+    st.plotly_chart(
+        grafico_barra_destacado(
+            df_vulneraveis,
+            "gpte",
+            ["Indígena", "Quilombola"],
+            "Grupo Familiar (GPTE)"
+        ),
+        use_container_width=True
+    )
 
-# 8️⃣ Faixa Etária
-grafico_barra_destacado(
-    df_vulneraveis,
-    "faixaEtaria",
-    ["25 a 44 anos"],
-    "Faixa Etária"
-)
+# 5️⃣ Ocupação | 6️⃣ Renda
+col5, col6 = st.columns(2)
 
+with col5:
+    st.plotly_chart(
+        grafico_barra_destacado(
+            df_vulneraveis,
+            "ocupacao_grupo",
+            ["nao_informado", "nao_especificado"],
+            "Ocupação"
+        ),
+        use_container_width=True
+    )
+
+with col6:
+    st.plotly_chart(
+        grafico_barra_destacado(
+            df_vulneraveis,
+            "faixaRendaFamiliarPerCapita",
+            ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
+            "Renda Familiar per Capita"
+        ),
+        use_container_width=True
+    )
+
+# 7️⃣ Região | 8️⃣ Faixa Etária
+col7, col8 = st.columns(2)
+
+with col7:
+    st.plotly_chart(
+        grafico_barra_destacado(
+            df_vulneraveis,
+            "regiao",
+            ["N", "NE", "Norte", "Nordeste"],
+            "Região"
+        ),
+        use_container_width=True
+    )
+
+with col8:
+    st.plotly_chart(
+        grafico_barra_destacado(
+            df_vulneraveis,
+            "faixaEtaria",
+            ["25 a 44 anos"],
+            "Faixa Etária"
+        ),
+        use_container_width=True
+    )
 # =========================
 # RODAPÉ
 # =========================
