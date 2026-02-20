@@ -171,7 +171,7 @@ st.plotly_chart(fig, use_container_width=True)
 # -------------------------
 # COLUNAS 1 A 4
 # -------------------------
-col1, col2, col3, col4 = st.columns(4)
+col1, col2 = st.columns(2)
 
 # =========================
 # 1️⃣ SEXO (PIZZA)
@@ -225,6 +225,8 @@ with col2:
 
     fig.update_layout(title="Faixa etária", showlegend=False)
     st.plotly_chart(fig, use_container_width=True)
+
+col3, col4 = st.columns(2)
 
 # =========================
 # 3️⃣ REGIÃO (BARRA)
