@@ -247,7 +247,8 @@ with col3:
         color_discrete_map="identity"
     )
 
-    fig.update_layout(title="Região", showlegend=False)
+    fig.update_layout(title="Região", showlegend=False,
+                     xaxis=dict(categoryorder="total descending"))
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================
