@@ -25,9 +25,8 @@ df = st.session_state["df"].copy()
 st.title("Aplicação do Índice Ponderado de Representatividade")
 
 st.markdown("""
-Esta página aplica um Índice Ponderado de Representatividade (IPR),
-estruturado em dimensões, inspirado na metodologia do Índice de Priorização
-de Objetos de Auditoria (IPOA) :contentReference[oaicite:1]{index=1}.
+Aplicação do Índice Ponderado de Representatividade com modelo
+multiplicativo, inspirado na lógica de agregação do IPOA.
 """)
 
 st.divider()
@@ -35,100 +34,78 @@ st.divider()
 # =========================
 # DEFINIÇÃO DOS PESOS
 # =========================
-st.sidebar.header("⚖️ Pesos das Dimensões")
+st.sidebar.header("⚖️ Pesos das Características")
 
-peso_socio = st.sidebar.slider("Peso Dimensão Socioeconômica", 0.0, 5.0, 2.0)
-peso_etnico = st.sidebar.slider("Peso Dimensão Étnico-Racial", 0.0, 5.0, 1.0)
-peso_territorial = st.sidebar.slider("Peso Dimensão Territorial", 0.0, 5.0, 1.0)
-peso_familiar = st.sidebar.slider("Peso Dimensão Familiar", 0.0, 5.0, 1.0)
-
-# =========================
-# CÁLCULO DOS SUBÍNDICES
-# =========================
-def calcular_subindices(row):
-
-    # ------------------------
-    # 1️⃣ Dimensão Socioeconômica
-    # ------------------------
-    socio = 0
-
-    if row.get("cadunico") == 'Cadastrado':
-        socio += 1
-
-    if row.get("faixaRendaFamiliarPerCapita") in ['De 0 até R$ 109', 'De R$ 109,01 até R$ 218']:
-        socio += 1
-
-
-    # ------------------------
-    # 2️⃣ Dimensão Étnico-Racial
-    # ------------------------
-    etnico = 0
-
-    if row.get("racaCor") in ['Preta','Parda','Indígena']:
-        etnico += 1
-
-    if row.get("gpte_codigo") not in [0, "000", None, 'Nenhuma']:
-        etnico += 1
-
-    # ------------------------
-    # 3️⃣ Dimensão Territorial
-    # ------------------------
-    territorial = 0
-
-    if row.get("regiao") in ["NO", "NE"]:
-        territorial += 1
-
-    # ------------------------
-    # 4️⃣ Dimensão Familiar
-    # ------------------------
-    familiar = 1 if row.get("quantidadePessoasFamilia", 0) >= 5 else 0
-
-    return socio, etnico, territorial, familiar
-
-
-df[["IS", "IE", "IT", "IF"]] = df.apply(
-    lambda row: pd.Series(calcular_subindices(row)),
-    axis=1
-)
+peso_cadunico = st.sidebar.slider("CadÚnico (Cadastrado)", 0.0, 5.0, 2.0)
+peso_renda = st.sidebar.slider("Baixa Renda per capita", 0.0, 5.0, 2.0)
+peso_raca = st.sidebar.slider("Raça Preta/Parda/Indígena", 0.0, 5.0, 1.0)
+peso_gpte = st.sidebar.slider("GPTE", 0.0, 5.0, 1.5)
+peso_regiao = st.sidebar.slider("Região Norte/Nordeste", 0.0, 5.0, 1.0)
+peso_familia = st.sidebar.slider("Família numerosa (>=5)", 0.0, 5.0, 1.0)
+peso_sexo = st.sidebar.slider("Sexo feminino", 0.0, 5.0, 1.0)
+peso_idade = st.sidebar.slider("Jovens (até 29 anos)", 0.0, 5.0, 1.0)
 
 # =========================
-# MODELO 1 — SOMA PONDERADA
+# FUNÇÃO DE CÁLCULO
 # =========================
-df["IPR_soma"] = (
-    df["IS"] * peso_socio +
-    df["IE"] * peso_etnico +
-    df["IT"] * peso_territorial +
-    df["IF"] * peso_familiar
-)
+def calcular_ipr(row):
 
-# =========================
-# MODELO 2 — MULTIPLICATIVO
-# (inspirado no IPOA)
-# =========================
-df["IPR_multiplicativo"] = (
-    (df["IE"] * peso_etnico +
-     df["IT"] * peso_territorial +
-     df["IF"] * peso_familiar)
-    * (df["IS"] * peso_socio)
-)
+    score = 0
+
+    # CadÚnico
+    if row.get("cadunico") == "Cadastrado":
+        score += peso_cadunico
+
+    # Baixa renda
+    if row.get("faixaRendaFamiliarPerCapita") in [
+        "De 0 até R$ 109",
+        "De R$ 109,01 até R$ 218"
+    ]:
+        score += peso_renda
+
+    # Raça
+    if row.get("racaCor") in ["Preta", "Parda", "Indígena"]:
+        score += peso_raca
+
+    # GPTE
+    if row.get("gpte") not in [0, "000", None, "Nenhuma"]:
+        score += peso_gpte
+
+    # Região
+    if row.get("regiao") in ["NO", "NE", "Norte", "Nordeste"]:
+        score += peso_regiao
+
+    # Família numerosa
+    if row.get("quantidadePessoasFamilia", 0) >= 5:
+        score += peso_familia
+
+    # Sexo feminino
+    if row.get("sex_final") == "Feminino":
+        score += peso_sexo
+
+    # Jovens até 29 anos
+    idade = row.get("idade")
+    if idade is not None:
+        if isinstance(idade, (int, float)) and idade <= 29:
+            score += peso_idade
+
+    return score
+
+
+df["IPR"] = df.apply(calcular_ipr, axis=1)
 
 st.divider()
 
 # =========================
 # RANKING
 # =========================
-st.subheader("Ranking de Propostas")
-
-modelo_escolhido = st.radio(
-    "Escolha o modelo do índice:",
-    ["IPR_soma", "IPR_multiplicativo"]
-)
+st.subheader("Ranking de Propostas pelo Índice Multiplicativo")
 
 df_ranking = df.sort_values(
-    by=modelo_escolhido,
+    by="IPR",
     ascending=False
 )[
-    ["id_x", "titulo", "votos", modelo_escolhido]
+    ["id_x", "titulo", "votos", "IPR"]
 ]
 
 st.dataframe(df_ranking.head(20), use_container_width=True)
@@ -152,30 +129,24 @@ with col1:
     )
 
 with col2:
-    st.write(f"Top 10 por {modelo_escolhido}")
+    st.write("Top 10 por IPR")
     st.dataframe(
-        df.sort_values(by=modelo_escolhido, ascending=False)[
-            ["id_x", "titulo", modelo_escolhido]
+        df.sort_values(by="IPR", ascending=False)[
+            ["id_x", "titulo", "IPR"]
         ].head(10),
         use_container_width=True
     )
 
 st.divider()
 
-# =========================
-# INTERPRETAÇÃO
-# =========================
 st.markdown("""
 ### Interpretação
 
-O modelo de soma ponderada permite agregar dimensões de vulnerabilidade
-de forma linear.
+O índice ponderado permite simular mecanismos alternativos de priorização
+baseados em critérios de vulnerabilidade socioeconômica.
 
-O modelo multiplicativo atribui efeito amplificador à dimensão
-socioeconômica, alterando potencialmente a hierarquia das propostas.
-
-A comparação entre modelos permite avaliar o impacto metodológico
-da escolha da fórmula de agregação.
+A alteração dos pesos modifica a hierarquia das propostas,
+permitindo avaliar diferentes cenários de política pública.
 """)
 
 st.divider()
