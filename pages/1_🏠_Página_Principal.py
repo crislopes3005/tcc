@@ -153,13 +153,13 @@ cores = {
 
 fig.update_traces(
     marker=dict(
-        colors=[cores.get(cadunico, "#CCCCCC") for cadunico in contagem["cadunico"]]
+        colors=[cores.get(cadunico, "#CCCCCC") for cadunico in contagem["Cadastro"]]
     ),
     textinfo="percent+label"
 )
 
 fig.update_layout(
-    title="Participantes por sexo",
+    title="Participantes no CadÚnico",
 )
 
 st.plotly_chart(fig, use_container_width=True)
