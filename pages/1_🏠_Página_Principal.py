@@ -263,49 +263,7 @@ with col_grafico:
 st.divider()
 
 # =========================
-# 4️⃣ OCUPAÇÃO
-# =========================
-
-col_texto, col_grafico = st.columns([1, 2])
-
-with col_texto:
-    st.markdown("""
-### Perfil de Ocupação
-
-Destacam-se servidores públicos e trabalhadores
-de empresas públicas, considerando sua possível
-maior familiaridade com processos institucionais.
-
-A distribuição evidencia o perfil socioocupacional
-dos participantes.
-""")
-
-with col_grafico:
-    contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
-    contagem.columns = ["Ocupacao", "Participantes"]
-    contagem = contagem.sort_values("Participantes", ascending=False)
-
-    contagem["cor"] = contagem["Ocupacao"].apply(
-        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
-    )
-
-    fig = px.bar(
-        contagem,
-        x="Ocupacao",
-        y="Participantes",
-        color="cor",
-        color_discrete_map="identity",
-        text="Participantes"
-    )
-
-    fig.update_layout(showlegend=False,
-                      xaxis=dict(categoryorder="total descending"))
-
-    fig.update_traces(textposition="outside")
-
-    st.plotly_chart(fig, use_container_width=True)
-# =========================
-# PERFIL DE OCUPAÇÃO - PARETO
+# PERFIL DE OCUPAÇÃO - BARRA HORIZONTAL ELEGANTE
 # =========================
 
 st.divider()
@@ -314,66 +272,53 @@ col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
-### Perfil de Ocupação (Análise de Pareto)
+### Perfil de Ocupação
 
-O gráfico apresenta a distribuição das ocupações em ordem decrescente,
-acompanhada da curva de percentual acumulado.
+A distribuição evidencia o perfil socioocupacional dos participantes.
 
-A visualização permite identificar a concentração da participação
-em determinadas categorias ocupacionais.
+Destacam-se servidores públicos e trabalhadores de empresas públicas,
+considerando sua possível maior familiaridade com processos institucionais.
+
+A ordenação decrescente facilita a identificação das categorias
+com maior concentração de participação.
 """)
 
 with col_grafico:
 
     contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
     contagem.columns = ["Ocupacao", "Participantes"]
-    contagem = contagem.sort_values("Participantes", ascending=False)
+    contagem = contagem.sort_values("Participantes", ascending=True)
 
-    # Percentual acumulado
-    contagem["Percentual"] = contagem["Participantes"] / contagem["Participantes"].sum() * 100
-    contagem["Percentual_Acumulado"] = contagem["Percentual"].cumsum()
+    total = contagem["Participantes"].sum()
+    contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
 
-    # Destaque visual
     contagem["cor"] = contagem["Ocupacao"].apply(
-        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
+        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"]
+        else "#D3D3D3"
     )
 
-    # Gráfico de barras
     fig = px.bar(
         contagem,
-        x="Ocupacao",
-        y="Participantes",
+        y="Ocupacao",
+        x="Participantes",
+        orientation="h",
         color="cor",
         color_discrete_map="identity",
-        text="Participantes"
+        text=contagem["Participantes"].astype(str) + 
+             " (" + contagem["Percentual"].astype(str) + "%)"
+    )
+
+    fig.update_layout(
+        showlegend=False,
+        yaxis_title="",
+        xaxis_title="Participantes",
+        margin=dict(l=10, r=10, t=10, b=10)
     )
 
     fig.update_traces(textposition="outside")
 
-    # Linha acumulada
-    fig.add_scatter(
-        x=contagem["Ocupacao"],
-        y=contagem["Percentual_Acumulado"],
-        mode="lines+markers",
-        name="% acumulado",
-        yaxis="y2",
-        line=dict(color="#2F4F4F", width=3)
-    )
-
-    # Segundo eixo Y
-    fig.update_layout(
-        yaxis=dict(title="Participantes"),
-        yaxis2=dict(
-            title="% acumulado",
-            overlaying="y",
-            side="right",
-            range=[0, 100]
-        ),
-        showlegend=True
-    )
-
     st.plotly_chart(fig, use_container_width=True)
-# =========================
+    
 # RODAPÉ
 # =========================
 st.divider()
