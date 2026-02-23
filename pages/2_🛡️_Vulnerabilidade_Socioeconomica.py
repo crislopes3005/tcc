@@ -15,7 +15,7 @@ st.set_page_config(
 )
 
 # =========================
-# USAR BASE DA PÁGINA PRINCIPAL
+# BASE DA PÁGINA PRINCIPAL
 # =========================
 if "df" not in st.session_state:
     st.warning("Nenhuma base foi carregada. Acesse a página principal primeiro.")
@@ -24,7 +24,7 @@ if "df" not in st.session_state:
 df = st.session_state["df"]
 
 # =========================
-# FILTROS SIDEBAR (REPLICADOS)
+# FILTROS
 # =========================
 st.sidebar.header("🔎 Filtros")
 
@@ -37,58 +37,35 @@ escolha = st.sidebar.selectbox(
 
 if escolha == 'Sim':
 
-    # Processo
     lista_processos = df['processo'].dropna().unique().tolist()
     lista_processos.insert(0, "Marcar Todos")
-
-    processo_selecionado = st.sidebar.selectbox(
-        "Selecione um processo:",
-        lista_processos
-    )
+    processo_selecionado = st.sidebar.selectbox("Selecione um processo:", lista_processos)
 
     if processo_selecionado != "Marcar Todos":
-        df_filtrado = df_filtrado[
-            df_filtrado['processo'] == processo_selecionado
-        ]
+        df_filtrado = df_filtrado[df_filtrado['processo'] == processo_selecionado]
 
-    # Estado da proposta
     lista_status = df_filtrado['state'].dropna().unique().tolist()
     lista_status.insert(0, "Marcar Todos")
-
-    status_selecionado = st.sidebar.selectbox(
-        "Selecione o estado da proposta:",
-        lista_status
-    )
+    status_selecionado = st.sidebar.selectbox("Selecione o estado da proposta:", lista_status)
 
     if status_selecionado != "Marcar Todos":
-        df_filtrado = df_filtrado[
-            df_filtrado['state'] == status_selecionado
-        ]
+        df_filtrado = df_filtrado[df_filtrado['state'] == status_selecionado]
 
-    # Cluster
     lista_cluster = df_filtrado['cluster_k3'].dropna().unique().tolist()
     lista_cluster.insert(0, "Marcar Todos")
-
-    cluster_selecionado = st.sidebar.selectbox(
-        "Selecione a classificação do proponente:",
-        lista_cluster
-    )
+    cluster_selecionado = st.sidebar.selectbox("Selecione a classificação do proponente:", lista_cluster)
 
     if cluster_selecionado != "Marcar Todos":
-        df_filtrado = df_filtrado[
-            df_filtrado['cluster_k3'] == cluster_selecionado
-        ]
+        df_filtrado = df_filtrado[df_filtrado['cluster_k3'] == cluster_selecionado]
 
 # =========================
 # FILTRO DE VULNERABILIDADE
 # =========================
-
 df_vulneraveis = df_filtrado[
     df_filtrado['cadunico'].astype(str).str.strip().str.lower() == 'cadastrado'
 ].copy()
 
 df_vulneraveis = df_vulneraveis.drop_duplicates(subset='id_autor')
-
 
 # =========================
 # TÍTULO
@@ -96,14 +73,9 @@ df_vulneraveis = df_vulneraveis.drop_duplicates(subset='id_autor')
 st.markdown('# Análise dos Participantes Socioeconomicamente Vulneráveis')
 
 st.write("""
-<div style="text-align: justify">
-
 Esta seção apresenta a caracterização socioeconômica dos participantes
-identificados como cadastrados no CadÚnico ou beneficiários do Programa
-Bolsa Família, considerando os filtros aplicados.
-
-</div>
-""", unsafe_allow_html=True)
+identificados como cadastrados no CadÚnico.
+""")
 
 st.divider()
 
@@ -116,41 +88,29 @@ total_participantes = df_filtrado['id_autor'].nunique()
 total_vulneraveis = df_vulneraveis['id_autor'].nunique()
 
 with col1:
-    st.subheader("Participantes vulneráveis")
-    st.metric("", total_vulneraveis)
+    st.metric("Participantes vulneráveis", total_vulneraveis)
 
 with col2:
     percentual = round((total_vulneraveis / total_participantes) * 100, 2) if total_participantes > 0 else 0
-    st.subheader("Percentual sobre o total filtrado")
-    st.metric("", f"{percentual}%")
+    st.metric("Percentual sobre o total filtrado", f"{percentual}%")
 
 st.divider()
 
 if df_vulneraveis.empty:
-    st.warning("Nenhum participante vulnerável encontrado para os filtros aplicados.")
+    st.warning("Nenhum participante vulnerável encontrado.")
     st.stop()
 
-# =========================
-# SEÇÃO ANALÍTICA
-# =========================
-
-st.divider()
-
-# =========================
-# 1️⃣ PIRÂMIDE ETÁRIA (FAIXA + SEXO)
-# =========================
-
+# ==========================================================
+# 1️⃣ PIRÂMIDE ETÁRIA
+# ==========================================================
 col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
 ### Estrutura Etária por Gênero
 
-A pirâmide permite visualizar a distribuição etária
-dos participantes vulneráveis, comparando homens e mulheres.
-
-A análise evidencia possíveis concentrações geracionais
-na população cadastrada no CadÚnico.
+A pirâmide permite comparar a distribuição de homens e mulheres
+entre os participantes vulneráveis.
 """)
 
 with col_grafico:
@@ -201,99 +161,128 @@ with col_grafico:
     )
 
     fig.update_traces(textposition="outside")
+    fig.update_xaxes(showticklabels=False, showgrid=False)
 
-    fig.update_xaxes(
-        showticklabels=False,
-        showgrid=False,
-        zeroline=True,
-        zerolinecolor="#999999"
+    st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+# ==========================================================
+# FUNÇÃO BARRA HORIZONTAL
+# ==========================================================
+def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
+
+    col_texto, col_grafico = st.columns([1, 2])
+
+    with col_texto:
+        st.markdown(f"### {titulo}\n\n{descricao}")
+
+    with col_grafico:
+        contagem = df_base[coluna].value_counts().reset_index()
+        contagem.columns = ["Categoria", "Participantes"]
+        contagem = contagem.sort_values("Participantes", ascending=True)
+
+        contagem["cor"] = contagem["Categoria"].apply(
+            lambda x: "#5B7C99" if x in destaques else "#D3D3D3"
+        )
+
+        fig = px.bar(
+            contagem,
+            y="Categoria",
+            x="Participantes",
+            orientation="h",
+            color="cor",
+            color_discrete_map="identity",
+            text="Participantes"
+        )
+
+        fig.update_layout(showlegend=False)
+        fig.update_traces(textposition="outside")
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+# ==========================================================
+# 2️⃣ PBF
+# ==========================================================
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Beneficiários do PBF
+
+Destaca-se a proporção de beneficiários do Programa Bolsa Família.
+""")
+
+with col_grafico:
+    contagem = df_vulneraveis["familiaBeneficiariaPBF"].value_counts().reset_index()
+    contagem.columns = ["PBF", "Participantes"]
+
+    cores = {True: "#5B7C99", False: "#D3D3D3"}
+
+    fig = px.pie(contagem, names="PBF", values="Participantes", hole=0.4)
+
+    fig.update_traces(
+        marker=dict(colors=[cores.get(v, "#CCCCCC") for v in contagem["PBF"]]),
+        textinfo="percent+label"
     )
 
     st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
 
-# =========================
-# 2️⃣ GRUPO FAMILIAR (BARRA HORIZONTAL)
-# =========================
+# ==========================================================
+# 3️⃣ RAÇA
+# ==========================================================
+barra_horizontal(
+    df_vulneraveis,
+    "racaCor",
+    ["Preta", "Parda", "Indígena"],
+    "Raça/Cor",
+    "Destacam-se grupos historicamente vulnerabilizados."
+)
 
-col_texto, col_grafico = st.columns([1, 2])
+# ==========================================================
+# 4️⃣ GPTE
+# ==========================================================
+barra_horizontal(
+    df_vulneraveis,
+    "gpte",
+    ["Indígena", "Quilombola"],
+    "Grupo Familiar (GPTE)",
+    "Evidencia presença de grupos tradicionais."
+)
 
-with col_texto:
-    st.markdown("""
-### Grupo Populacional Tradicional ou Específico (GPTE)
+# ==========================================================
+# 5️⃣ OCUPAÇÃO
+# ==========================================================
+barra_horizontal(
+    df_vulneraveis,
+    "ocupacao_grupo",
+    ["servidor_publico", "empresa_publica"],
+    "Ocupação",
+    "Perfil socioocupacional dos participantes."
+)
 
-A distribuição evidencia a presença de grupos
-historicamente vulnerabilizados.
+# ==========================================================
+# 6️⃣ RENDA
+# ==========================================================
+barra_horizontal(
+    df_vulneraveis,
+    "faixaRendaFamiliarPerCapita",
+    ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
+    "Renda Familiar per capita",
+    "Destacam-se faixas de maior vulnerabilidade."
+)
 
-Destacam-se povos indígenas e comunidades quilombolas.
-""")
-
-with col_grafico:
-
-    contagem = df_vulneraveis["gpte"].value_counts().reset_index()
-    contagem.columns = ["Grupo", "Participantes"]
-    contagem = contagem.sort_values("Participantes", ascending=True)
-
-    contagem["cor"] = contagem["Grupo"].apply(
-        lambda x: "#5B7C99" if x in ["Indígena", "Quilombola"] else "#D3D3D3"
-    )
-
-    fig = px.bar(
-        contagem,
-        y="Grupo",
-        x="Participantes",
-        orientation="h",
-        color="cor",
-        color_discrete_map="identity",
-        text="Participantes"
-    )
-
-    fig.update_layout(showlegend=False)
-    fig.update_traces(textposition="outside")
-
-    st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
-# =========================
-# 3️⃣ OCUPAÇÃO (BARRA HORIZONTAL)
-# =========================
-
-col_texto, col_grafico = st.columns([1, 2])
-
-with col_texto:
-    st.markdown("""
-### Perfil de Ocupação
-
-A distribuição socioocupacional permite avaliar
-o grau de institucionalização da participação.
-
-Destacam-se categorias com possível maior
-proximidade com o setor público.
-""")
-
-with col_grafico:
-
-    contagem = df_vulneraveis["ocupacao_grupo"].value_counts().reset_index()
-    contagem.columns = ["Ocupacao", "Participantes"]
-    contagem = contagem.sort_values("Participantes", ascending=True)
-
-    contagem["cor"] = contagem["Ocupacao"].apply(
-        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
-    )
-
-    fig = px.bar(
-        contagem,
-        y="Ocupacao",
-        x="Participantes",
-        orientation="h",
-        color="cor",
-        color_discrete_map="identity",
-        text="Participantes"
-    )
-
-    fig.update_layout(showlegend=False)
-    fig.update_traces(textposition="outside")
-
-    st.plotly_chart(fig, use_container_width=True)
+# ==========================================================
+# 7️⃣ REGIÃO
+# ==========================================================
+barra_horizontal(
+    df_vulneraveis,
+    "regiao",
+    ["N", "NE", "Norte", "Nordeste"],
+    "Região",
+    "Regiões historicamente associadas a maior vulnerabilidade."
+)
