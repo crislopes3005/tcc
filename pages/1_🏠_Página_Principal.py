@@ -236,15 +236,15 @@ st.plotly_chart(fig, use_container_width=True)
 # =========================
 # 3️⃣ REGIÃO (BARRA)
 # =========================
-#with col3:
-    contagem = df_participantes["regiao"].value_counts().reset_index()
-    contagem.columns = ["Regiao", "Participantes"]
 
-    contagem["cor"] = contagem["Regiao"].apply(
+contagem = df_participantes["regiao"].value_counts().reset_index()
+contagem.columns = ["Regiao", "Participantes"]
+
+contagem["cor"] = contagem["Regiao"].apply(
         lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
     )
 
-    fig = px.bar(
+fig = px.bar(
         contagem,
         x="Regiao",
         y="Participantes",
@@ -252,26 +252,26 @@ st.plotly_chart(fig, use_container_width=True)
         color_discrete_map="identity"
     )
 
-    fig.update_layout(title="Região", showlegend=False,
+fig.update_layout(title="Região", showlegend=False,
                      xaxis=dict(categoryorder="total descending"))
-    st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 # =========================
 # 4️⃣ UF (BARRA)
 # =========================
 
-    estados_norte = ["AC","AP","AM","PA","RO","RR","TO"]
+estados_norte = ["AC","AP","AM","PA","RO","RR","TO"]
 
-    contagem = df_participantes["siglaUf"].value_counts().reset_index()
-    contagem.columns = ["UF", "Participantes"]
+contagem = df_participantes["siglaUf"].value_counts().reset_index()
+contagem.columns = ["UF", "Participantes"]
 
-    contagem = contagem.sort_values("Participantes", ascending=False)
+contagem = contagem.sort_values("Participantes", ascending=False)
 
-    contagem["cor"] = contagem["UF"].apply(
+contagem["cor"] = contagem["UF"].apply(
         lambda x: "#5B7C99" if x in estados_norte else "#D3D3D3"
     )
 
-    fig = px.bar(
+fig = px.bar(
         contagem,
         x="UF",
         y="Participantes",
@@ -279,9 +279,9 @@ st.plotly_chart(fig, use_container_width=True)
         color_discrete_map="identity"
     )
 
-    fig.update_layout(title="Estado (UF)", showlegend=False,
+fig.update_layout(title="Estado (UF)", showlegend=False,
                      xaxis=dict(categoryorder="total descending"))
-    st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
