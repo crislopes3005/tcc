@@ -102,194 +102,208 @@ df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 
 
 # =========================
-# CADÚNICO
-# =========================
-st.markdown("""
-**Participantes no CadÚnico**
-
-Destaca-se em azul os participantes cadastrados no CadÚnico, 
-indicador relevante de vulnerabilidade socioeconômica.
-""")
-
-df_cadunico = df_participantes.dropna(subset=["cadunico"])
-contagem = df_cadunico["cadunico"].value_counts().reset_index()
-contagem.columns = ["Cadastro", "Participantes"]
-
-fig = px.pie(contagem, names="Cadastro", values="Participantes", hole=0.4)
-
-cores = {"Cadastrado": "#5B7C99", "Não cadastrado": "#D3D3D3"}
-
-fig.update_traces(
-    marker=dict(colors=[cores.get(v, "#CCCCCC") for v in contagem["Cadastro"]]),
-    textinfo="percent+label"
-)
-
-st.plotly_chart(fig, use_container_width=True)
-
-
-# =========================
-# PIRÂMIDE ETÁRIA CORRIGIDA
+# SEÇÃO VISUAL ANALÍTICA
 # =========================
 
 st.divider()
-st.markdown("""
-**Distribuição por Faixa Etária e Gênero**
 
-Os valores são apresentados diretamente nas barras.
+# =========================
+# 1️⃣ CADÚNICO
+# =========================
+
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Participantes no CadÚnico
+
+Destacam-se em azul os participantes cadastrados no CadÚnico,
+indicador central de vulnerabilidade socioeconômica.
+
+A proporção permite avaliar o grau de inclusão social
+dos participantes do processo.
 """)
 
-df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"]).copy()
+with col_grafico:
+    df_cadunico = df_participantes.dropna(subset=["cadunico"])
+    contagem = df_cadunico["cadunico"].value_counts().reset_index()
+    contagem.columns = ["Cadastro", "Participantes"]
 
-contagem = (
-    df_idade
-    .groupby(["faixaEtaria", "sex_final"])
-    .size()
-    .reset_index(name="Participantes")
-)
+    fig = px.pie(contagem, names="Cadastro", values="Participantes", hole=0.4)
 
-ordem_faixas = [
-    "0 a 12 anos",
-    "13 a 17 anos",
-    "18 a 24 anos",
-    "25 a 44 anos",
-    "45 a 59 anos",
-    "Maior de 60 anos"
-]
+    cores = {"Cadastrado": "#5B7C99", "Não cadastrado": "#D3D3D3"}
 
-contagem["faixaEtaria"] = pd.Categorical(
-    contagem["faixaEtaria"],
-    categories=ordem_faixas,
-    ordered=True
-)
+    fig.update_traces(
+        marker=dict(colors=[cores.get(v, "#CCCCCC") for v in contagem["Cadastro"]]),
+        textinfo="percent+label"
+    )
 
-contagem = contagem.sort_values("faixaEtaria")
+    st.plotly_chart(fig, use_container_width=True)
 
-# Criar coluna para posicionamento (negativo apenas para homens)
-contagem["valor_plot"] = contagem.apply(
-    lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
-    else row["Participantes"],
-    axis=1
-)
-
-fig = px.bar(
-    contagem,
-    y="faixaEtaria",
-    x="valor_plot",
-    color="sex_final",
-    orientation="h",
-    barmode="relative",
-    text="Participantes",  # 🔹 aqui é a correção
-    color_discrete_map={
-        "Masculino": "#B0B0B0",
-        "Feminino": "#5B7C99"
-    }
-)
-
-fig.update_traces(textposition="outside")
-
-# Remover valores do eixo
-fig.update_xaxes(
-    showticklabels=False,
-    showgrid=False,
-    zeroline=True,
-    zerolinecolor="#999999"
-)
-
-fig.update_layout(
-    xaxis_title="",
-    yaxis_title="Faixa Etária"
-)
-
-st.plotly_chart(fig, use_container_width=True)
+st.divider()
 
 # =========================
-# REGIÃO
+# 2️⃣ PIRÂMIDE ETÁRIA
 # =========================
-st.markdown("""
-**Participantes por Região**
 
-Regiões Norte e Nordeste são destacadas devido à sua relevância 
-no debate sobre desigualdades regionais.
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Estrutura Etária por Gênero
+
+O gráfico permite comparar a distribuição de homens e mulheres
+em diferentes faixas etárias.
+
+A visualização auxilia na identificação de concentrações
+geracionais na participação.
 """)
 
-contagem = df_participantes["regiao"].value_counts().reset_index()
-contagem.columns = ["Regiao", "Participantes"]
-contagem = contagem.sort_values("Participantes", ascending=False)
+with col_grafico:
+    df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"])
 
-contagem["cor"] = contagem["Regiao"].apply(
-    lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
-)
+    contagem = (
+        df_idade.groupby(["faixaEtaria", "sex_final"])
+        .size()
+        .reset_index(name="Participantes")
+    )
 
-fig = px.bar(contagem, x="Regiao", y="Participantes",
-             color="cor", color_discrete_map="identity",
-             text="Participantes")
+    ordem_faixas = [
+        "0 a 12 anos",
+        "13 a 17 anos",
+        "18 a 24 anos",
+        "25 a 44 anos",
+        "45 a 59 anos",
+        "Maior de 60 anos"
+    ]
 
-fig.update_layout(showlegend=False,
-                  xaxis=dict(categoryorder="total descending"))
+    contagem["faixaEtaria"] = pd.Categorical(
+        contagem["faixaEtaria"],
+        categories=ordem_faixas,
+        ordered=True
+    )
 
-fig.update_traces(textposition="outside")
-st.plotly_chart(fig, use_container_width=True)
+    contagem = contagem.sort_values("faixaEtaria")
 
+    contagem["valor_plot"] = contagem.apply(
+        lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
+        else row["Participantes"],
+        axis=1
+    )
+
+    fig = px.bar(
+        contagem,
+        y="faixaEtaria",
+        x="valor_plot",
+        color="sex_final",
+        orientation="h",
+        barmode="relative",
+        text="Participantes",
+        color_discrete_map={
+            "Masculino": "#B0B0B0",
+            "Feminino": "#5B7C99"
+        }
+    )
+
+    fig.update_traces(textposition="outside")
+
+    fig.update_xaxes(
+        showticklabels=False,
+        showgrid=False,
+        zeroline=True,
+        zerolinecolor="#999999"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
 
 # =========================
-# UF
+# 3️⃣ REGIÃO
 # =========================
-st.markdown("""
-**Participantes por Unidade da Federação**
 
-Estados da Região Norte são destacados por sua relevância 
-nas análises de desigualdade territorial.
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Participação Regional
+
+As regiões Norte e Nordeste são destacadas
+por sua relevância no debate sobre desigualdade territorial.
+
+O gráfico permite observar a concentração regional
+dos participantes.
 """)
 
-estados_norte = ["AC","AP","AM","PA","RO","RR","TO"]
+with col_grafico:
+    contagem = df_participantes["regiao"].value_counts().reset_index()
+    contagem.columns = ["Regiao", "Participantes"]
+    contagem = contagem.sort_values("Participantes", ascending=False)
 
-contagem = df_participantes["siglaUf"].value_counts().reset_index()
-contagem.columns = ["UF", "Participantes"]
-contagem = contagem.sort_values("Participantes", ascending=False)
+    contagem["cor"] = contagem["Regiao"].apply(
+        lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
+    )
 
-contagem["cor"] = contagem["UF"].apply(
-    lambda x: "#5B7C99" if x in estados_norte else "#D3D3D3"
-)
+    fig = px.bar(
+        contagem,
+        x="Regiao",
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity",
+        text="Participantes"
+    )
 
-fig = px.bar(contagem, x="UF", y="Participantes",
-             color="cor", color_discrete_map="identity",
-             text="Participantes")
+    fig.update_layout(showlegend=False,
+                      xaxis=dict(categoryorder="total descending"))
 
-fig.update_layout(showlegend=False,
-                  xaxis=dict(categoryorder="total descending"))
+    fig.update_traces(textposition="outside")
 
-fig.update_traces(textposition="outside")
-st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
 
+st.divider()
 
 # =========================
-# OCUPAÇÃO
+# 4️⃣ OCUPAÇÃO
 # =========================
-st.markdown("""
-**Participantes por Ocupação**
 
-Destacam-se servidores públicos e trabalhadores de empresas públicas,
-pela possível maior familiaridade com processos institucionais.
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Perfil de Ocupação
+
+Destacam-se servidores públicos e trabalhadores
+de empresas públicas, considerando sua possível
+maior familiaridade com processos institucionais.
+
+A distribuição evidencia o perfil socioocupacional
+dos participantes.
 """)
 
-contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
-contagem.columns = ["Ocupacao", "Participantes"]
-contagem = contagem.sort_values("Participantes", ascending=False)
+with col_grafico:
+    contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
+    contagem.columns = ["Ocupacao", "Participantes"]
+    contagem = contagem.sort_values("Participantes", ascending=False)
 
-contagem["cor"] = contagem["Ocupacao"].apply(
-    lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
-)
+    contagem["cor"] = contagem["Ocupacao"].apply(
+        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
+    )
 
-fig = px.bar(contagem, x="Ocupacao", y="Participantes",
-             color="cor", color_discrete_map="identity",
-             text="Participantes")
+    fig = px.bar(
+        contagem,
+        x="Ocupacao",
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity",
+        text="Participantes"
+    )
 
-fig.update_layout(showlegend=False,
-                  xaxis=dict(categoryorder="total descending"))
+    fig.update_layout(showlegend=False,
+                      xaxis=dict(categoryorder="total descending"))
 
-fig.update_traces(textposition="outside")
-st.plotly_chart(fig, use_container_width=True)
+    fig.update_traces(textposition="outside")
 
+    st.plotly_chart(fig, use_container_width=True)
 
 # =========================
 # RODAPÉ
