@@ -175,7 +175,7 @@ st.plotly_chart(fig, use_container_width=True)
 st.divider()
 st.subheader("Distribuição por Faixa Etária e Gênero")
 
-df_idade = df_vulneraveis.dropna(subset=["faixaEtaria", "sex_final"]).copy()
+df_idade = df_filtrados.dropna(subset=["faixaEtaria", "sex_final"]).copy()
 
 contagem = (
     df_idade
