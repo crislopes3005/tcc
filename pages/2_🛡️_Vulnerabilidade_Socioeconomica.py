@@ -131,170 +131,169 @@ if df_vulneraveis.empty:
     st.stop()
 
 # =========================
-# GRÁFICOS EM 2 COLUNAS
+# SEÇÃO ANALÍTICA
 # =========================
 
-def grafico_barra_destacado(df_base, coluna, destaque_lista, titulo):
-    contagem = df_base[coluna].value_counts().reset_index()
-    contagem.columns = [coluna, "Participantes"]
-    contagem = contagem.sort_values("Participantes", ascending=False)
+st.divider()
 
-    contagem["cor"] = contagem[coluna].apply(
-        lambda x: "#5B7C99" if x in destaque_lista else "#D3D3D3"
+# =========================
+# 1️⃣ PIRÂMIDE ETÁRIA (FAIXA + SEXO)
+# =========================
+
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Estrutura Etária por Gênero
+
+A pirâmide permite visualizar a distribuição etária
+dos participantes vulneráveis, comparando homens e mulheres.
+
+A análise evidencia possíveis concentrações geracionais
+na população cadastrada no CadÚnico.
+""")
+
+with col_grafico:
+
+    df_idade = df_vulneraveis.dropna(subset=["faixaEtaria", "sex_final"])
+
+    contagem = (
+        df_idade.groupby(["faixaEtaria", "sex_final"])
+        .size()
+        .reset_index(name="Participantes")
+    )
+
+    ordem_faixas = [
+        "0 a 12 anos",
+        "13 a 17 anos",
+        "18 a 24 anos",
+        "25 a 44 anos",
+        "45 a 59 anos",
+        "Maior de 60 anos"
+    ]
+
+    contagem["faixaEtaria"] = pd.Categorical(
+        contagem["faixaEtaria"],
+        categories=ordem_faixas,
+        ordered=True
+    )
+
+    contagem = contagem.sort_values("faixaEtaria")
+
+    contagem["valor_plot"] = contagem.apply(
+        lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
+        else row["Participantes"],
+        axis=1
     )
 
     fig = px.bar(
         contagem,
-        x=coluna,
-        y="Participantes",
+        y="faixaEtaria",
+        x="valor_plot",
+        color="sex_final",
+        orientation="h",
+        barmode="relative",
+        text="Participantes",
+        color_discrete_map={
+            "Masculino": "#B0B0B0",
+            "Feminino": "#5B7C99"
+        }
+    )
+
+    fig.update_traces(textposition="outside")
+
+    fig.update_xaxes(
+        showticklabels=False,
+        showgrid=False,
+        zeroline=True,
+        zerolinecolor="#999999"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+# =========================
+# 2️⃣ GRUPO FAMILIAR (BARRA HORIZONTAL)
+# =========================
+
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Grupo Populacional Tradicional ou Específico (GPTE)
+
+A distribuição evidencia a presença de grupos
+historicamente vulnerabilizados.
+
+Destacam-se povos indígenas e comunidades quilombolas.
+""")
+
+with col_grafico:
+
+    contagem = df_vulneraveis["gpte"].value_counts().reset_index()
+    contagem.columns = ["Grupo", "Participantes"]
+    contagem = contagem.sort_values("Participantes", ascending=True)
+
+    contagem["cor"] = contagem["Grupo"].apply(
+        lambda x: "#5B7C99" if x in ["Indígena", "Quilombola"] else "#D3D3D3"
+    )
+
+    fig = px.bar(
+        contagem,
+        y="Grupo",
+        x="Participantes",
+        orientation="h",
         color="cor",
         color_discrete_map="identity",
         text="Participantes"
     )
 
-    fig.update_layout(
-        title=titulo,
-        showlegend=False,
-        xaxis=dict(categoryorder="total descending")
-    )
-
+    fig.update_layout(showlegend=False)
     fig.update_traces(textposition="outside")
 
-    return fig
+    st.plotly_chart(fig, use_container_width=True)
 
-
-def grafico_pizza_destacado(df_base, coluna, destaque_valor, titulo):
-    contagem = df_base[coluna].value_counts().reset_index()
-    contagem.columns = [coluna, "Participantes"]
-
-    cores = [
-        "#5B7C99" if valor == destaque_valor else "#D3D3D3"
-        for valor in contagem[coluna]
-    ]
-
-    fig = px.pie(
-        contagem,
-        names=coluna,
-        values="Participantes",
-        hole=0.4
-    )
-
-    fig.update_traces(
-        marker=dict(colors=cores),
-        textinfo="percent+label"
-    )
-
-    fig.update_layout(title=titulo)
-
-    return fig
-
-
-# =========================
-# LINHAS DE GRÁFICOS (2 COLUNAS)
-# =========================
-
-# 1️⃣ PBF | 2️⃣ Sexo
-col1, col2 = st.columns(2)
-
-with col1:
-    st.plotly_chart(
-        grafico_pizza_destacado(
-            df_vulneraveis,
-            "familiaBeneficiariaPBF",
-            True,
-            "Beneficiários do PBF"
-        ),
-        use_container_width=True
-    )
-
-with col2:
-    st.plotly_chart(
-        grafico_pizza_destacado(
-            df_vulneraveis,
-            "sex_final",
-            "Feminino",
-            "Sexo"
-        ),
-        use_container_width=True
-    )
-
-# 3️⃣ Raça | 4️⃣ Grupo Familiar
-col3, col4 = st.columns(2)
-
-with col3:
-    st.plotly_chart(
-        grafico_barra_destacado(
-            df_vulneraveis,
-            "racaCor",
-            ["Preta", "Parda", "Indígena"],
-            "Raça/Cor"
-        ),
-        use_container_width=True
-    )
-
-with col4:
-    st.plotly_chart(
-        grafico_barra_destacado(
-            df_vulneraveis,
-            "gpte",
-            ["Indígena", "Quilombola"],
-            "Grupo Familiar (GPTE)"
-        ),
-        use_container_width=True
-    )
-
-# 5️⃣ Ocupação | 6️⃣ Renda
-col5, col6 = st.columns(2)
-
-with col5:
-    st.plotly_chart(
-        grafico_barra_destacado(
-            df_vulneraveis,
-            "ocupacao_grupo",
-            ["nao_informado", "nao_especificado"],
-            "Ocupação"
-        ),
-        use_container_width=True
-    )
-
-with col6:
-    st.plotly_chart(
-        grafico_barra_destacado(
-            df_vulneraveis,
-            "faixaRendaFamiliarPerCapita",
-            ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
-            "Renda Familiar per Capita"
-        ),
-        use_container_width=True
-    )
-
-# 7️⃣ Região | 8️⃣ Faixa Etária
-col7, col8 = st.columns(2)
-
-with col7:
-    st.plotly_chart(
-        grafico_barra_destacado(
-            df_vulneraveis,
-            "regiao",
-            ["N", "NE", "Norte", "Nordeste"],
-            "Região"
-        ),
-        use_container_width=True
-    )
-
-with col8:
-    st.plotly_chart(
-        grafico_barra_destacado(
-            df_vulneraveis,
-            "faixaEtaria",
-            ["25 a 44 anos"],
-            "Faixa Etária"
-        ),
-        use_container_width=True
-    )
-# =========================
-# RODAPÉ
-# =========================
 st.divider()
-st.subheader('Autora do projeto')
-st.write("Cristiane Lopes de Assis")
+
+# =========================
+# 3️⃣ OCUPAÇÃO (BARRA HORIZONTAL)
+# =========================
+
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Perfil de Ocupação
+
+A distribuição socioocupacional permite avaliar
+o grau de institucionalização da participação.
+
+Destacam-se categorias com possível maior
+proximidade com o setor público.
+""")
+
+with col_grafico:
+
+    contagem = df_vulneraveis["ocupacao_grupo"].value_counts().reset_index()
+    contagem.columns = ["Ocupacao", "Participantes"]
+    contagem = contagem.sort_values("Participantes", ascending=True)
+
+    contagem["cor"] = contagem["Ocupacao"].apply(
+        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
+    )
+
+    fig = px.bar(
+        contagem,
+        y="Ocupacao",
+        x="Participantes",
+        orientation="h",
+        color="cor",
+        color_discrete_map="identity",
+        text="Participantes"
+    )
+
+    fig.update_layout(showlegend=False)
+    fig.update_traces(textposition="outside")
+
+    st.plotly_chart(fig, use_container_width=True)
