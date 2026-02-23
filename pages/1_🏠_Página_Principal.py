@@ -128,15 +128,14 @@ st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
-# PIRÂMIDE ETÁRIA (EIXO LIMPO)
+# PIRÂMIDE ETÁRIA CORRIGIDA
 # =========================
 
 st.divider()
 st.markdown("""
 **Distribuição por Faixa Etária e Gênero**
 
-O gráfico apresenta a estrutura etária por sexo.
-Os valores são exibidos apenas nas barras para facilitar a leitura.
+Os valores são apresentados diretamente nas barras.
 """)
 
 df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"]).copy()
@@ -165,7 +164,7 @@ contagem["faixaEtaria"] = pd.Categorical(
 
 contagem = contagem.sort_values("faixaEtaria")
 
-# Masculino negativo apenas para posicionamento
+# Criar coluna para posicionamento (negativo apenas para homens)
 contagem["valor_plot"] = contagem.apply(
     lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
     else row["Participantes"],
@@ -179,31 +178,26 @@ fig = px.bar(
     color="sex_final",
     orientation="h",
     barmode="relative",
+    text="Participantes",  # 🔹 aqui é a correção
     color_discrete_map={
         "Masculino": "#B0B0B0",
         "Feminino": "#5B7C99"
     }
 )
 
-# Mostrar apenas valores positivos como rótulo
-fig.update_traces(
-    text=contagem["Participantes"],
-    textposition="outside"
-)
+fig.update_traces(textposition="outside")
 
-# 🔹 Remover completamente os valores do eixo X
+# Remover valores do eixo
 fig.update_xaxes(
     showticklabels=False,
     showgrid=False,
     zeroline=True,
-    zerolinewidth=1,
     zerolinecolor="#999999"
 )
 
 fig.update_layout(
     xaxis_title="",
-    yaxis_title="Faixa Etária",
-    showlegend=True
+    yaxis_title="Faixa Etária"
 )
 
 st.plotly_chart(fig, use_container_width=True)
