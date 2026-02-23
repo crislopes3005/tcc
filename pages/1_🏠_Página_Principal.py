@@ -169,14 +169,15 @@ st.plotly_chart(fig, use_container_width=True)
 # =========================
 
 # =========================
-# IDADE POR GÊNERO (USANDO faixaEtaria)
+# PIRÂMIDE ETÁRIA
 # =========================
 
 st.divider()
 st.subheader("Distribuição por Faixa Etária e Gênero")
 
-df_idade = df_filtrado.dropna(subset=["faixaEtaria", "sex_final"]).copy()
+df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"]).copy()
 
+# Contagem por faixa e sexo
 contagem = (
     df_idade
     .groupby(["faixaEtaria", "sex_final"])
@@ -184,7 +185,7 @@ contagem = (
     .reset_index(name="Participantes")
 )
 
-# 🔹 Se você já tem ordem padronizada, ajuste aqui:
+# Ordem das faixas (ajuste se necessário)
 ordem_faixas = [
     "0 a 12 anos",
     "13 a 17 anos",
@@ -202,29 +203,36 @@ contagem["faixaEtaria"] = pd.Categorical(
 
 contagem = contagem.sort_values("faixaEtaria")
 
+# Tornar masculino negativo
+contagem["valor_plot"] = contagem.apply(
+    lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
+    else row["Participantes"],
+    axis=1
+)
+
 fig = px.bar(
     contagem,
-    x="faixaEtaria",
-    y="Participantes",
+    y="faixaEtaria",
+    x="valor_plot",
     color="sex_final",
-    barmode="group",
-    text="Participantes",
+    orientation="h",
+    barmode="relative",
     color_discrete_map={
-        "Masculino": "#B0B0B0",
+        "Masculino": "#7A8FA6",
         "Feminino": "#5B7C99"
     }
 )
 
 fig.update_layout(
-    xaxis_title="Faixa Etária",
-    yaxis_title="Participantes",
-    xaxis=dict(categoryorder="array", categoryarray=ordem_faixas)
+    xaxis_title="Participantes",
+    yaxis_title="Faixa Etária",
+    xaxis=dict(tickformat=","),
 )
 
-fig.update_traces(textposition="outside")
+# Ajuste para mostrar valores absolutos no eixo
+fig.update_xaxes(tickvals=list(range(-100,101,20)))
 
 st.plotly_chart(fig, use_container_width=True)
-
 # =========================
 # 3️⃣ REGIÃO (BARRA)
 # =========================
@@ -251,7 +259,7 @@ with col3:
 # =========================
 # 4️⃣ UF (BARRA)
 # =========================
-with col4:
+
     estados_norte = ["AC","AP","AM","PA","RO","RR","TO"]
 
     contagem = df_participantes["siglaUf"].value_counts().reset_index()
