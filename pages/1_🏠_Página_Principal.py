@@ -168,65 +168,62 @@ st.plotly_chart(fig, use_container_width=True)
 # GRÁFICOS ORGANIZADOS
 # =========================
 
-col1, col2 = st.columns(2)
-
 # =========================
-# 1️⃣ SEXO (PIZZA)
+# IDADE POR GÊNERO (USANDO faixaEtaria)
 # =========================
-with col1:
-    df_sexo = df_participantes.dropna(subset=["sex_final"])
-    contagem = df_sexo["sex_final"].value_counts().reset_index()
-    contagem.columns = ["Sexo", "Participantes"]
 
-    fig = px.pie(
-        contagem,
-        names="Sexo",
-        values="Participantes",
-        hole=0
-    )
+st.divider()
+st.subheader("Distribuição por Faixa Etária e Gênero")
 
-    cores = {
+df_idade = df_vulneraveis.dropna(subset=["faixaEtaria", "sex_final"]).copy()
+
+contagem = (
+    df_idade
+    .groupby(["faixaEtaria", "sex_final"])
+    .size()
+    .reset_index(name="Participantes")
+)
+
+# 🔹 Se você já tem ordem padronizada, ajuste aqui:
+ordem_faixas = [
+    "0 a 12 anos",
+    "13 a 17 anos",
+    "18 a 24 anos",
+    "25 a 44 anos",
+    "45 a 59 anos",
+    "Maior de 60 anos"
+]
+
+contagem["faixaEtaria"] = pd.Categorical(
+    contagem["faixaEtaria"],
+    categories=ordem_faixas,
+    ordered=True
+)
+
+contagem = contagem.sort_values("faixaEtaria")
+
+fig = px.bar(
+    contagem,
+    x="faixaEtaria",
+    y="Participantes",
+    color="sex_final",
+    barmode="group",
+    text="Participantes",
+    color_discrete_map={
         "Masculino": "#B0B0B0",
         "Feminino": "#5B7C99"
     }
+)
 
-    fig.update_traces(
-        marker=dict(
-            colors=[cores.get(sexo, "#CCCCCC") for sexo in contagem["Sexo"]]
-        ),
-        textinfo="percent+label"
-    )
+fig.update_layout(
+    xaxis_title="Faixa Etária",
+    yaxis_title="Participantes",
+    xaxis=dict(categoryorder="array", categoryarray=ordem_faixas)
+)
 
-    fig.update_layout(title="Sexo")
+fig.update_traces(textposition="outside")
 
-    st.plotly_chart(fig, use_container_width=True)
-
-# =========================
-# 2️⃣ FAIXA ETÁRIA (BARRA)
-# =========================
-with col2:
-    contagem = df_participantes["faixaEtaria"].value_counts().reset_index()
-    contagem.columns = ["Faixa", "Participantes"]
-
-    contagem = contagem.sort_values("Participantes", ascending=False)
-
-    contagem["cor"] = contagem["Faixa"].apply(
-        lambda x: "#5B7C99" if x == "25 a 44 anos" else "#D3D3D3"
-    )
-
-    fig = px.bar(
-        contagem,
-        x="Faixa",
-        y="Participantes",
-        color="cor",
-        color_discrete_map="identity"
-    )
-
-    fig.update_layout(title="Faixa etária", showlegend=False,  
-                      xaxis=dict(categoryorder="total descending"))
-    st.plotly_chart(fig, use_container_width=True)
-
-col3, col4 = st.columns(2)
+st.plotly_chart(fig, use_container_width=True)
 
 # =========================
 # 3️⃣ REGIÃO (BARRA)
