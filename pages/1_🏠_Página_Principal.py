@@ -128,7 +128,7 @@ st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
-# PIRÂMIDE ETÁRIA (valores visuais positivos)
+# PIRÂMIDE ETÁRIA (EIXO LIMPO)
 # =========================
 
 st.divider()
@@ -136,7 +136,7 @@ st.markdown("""
 **Distribuição por Faixa Etária e Gênero**
 
 O gráfico apresenta a estrutura etária por sexo.
-Os valores são exibidos de forma positiva para facilitar a leitura.
+Os valores são exibidos apenas nas barras para facilitar a leitura.
 """)
 
 df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"]).copy()
@@ -165,7 +165,7 @@ contagem["faixaEtaria"] = pd.Categorical(
 
 contagem = contagem.sort_values("faixaEtaria")
 
-# Criar coluna para plotagem (homens negativos internamente)
+# Masculino negativo apenas para posicionamento
 contagem["valor_plot"] = contagem.apply(
     lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
     else row["Participantes"],
@@ -185,28 +185,28 @@ fig = px.bar(
     }
 )
 
-# 🔹 Mostrar rótulos sempre positivos
+# Mostrar apenas valores positivos como rótulo
 fig.update_traces(
     text=contagem["Participantes"],
     textposition="outside"
 )
 
-# 🔹 Ajustar eixo para mostrar apenas valores absolutos
-max_val = contagem["Participantes"].max()
-
+# 🔹 Remover completamente os valores do eixo X
 fig.update_xaxes(
-    range=[-max_val * 1.2, max_val * 1.2],
-    tickvals=list(range(-int(max_val), int(max_val)+1, int(max_val/4) if max_val > 0 else 1)),
-    ticktext=[str(abs(x)) for x in list(range(-int(max_val), int(max_val)+1, int(max_val/4) if max_val > 0 else 1))]
+    showticklabels=False,
+    showgrid=False,
+    zeroline=True,
+    zerolinewidth=1,
+    zerolinecolor="#999999"
 )
 
 fig.update_layout(
-    xaxis_title="Participantes",
-    yaxis_title="Faixa Etária"
+    xaxis_title="",
+    yaxis_title="Faixa Etária",
+    showlegend=True
 )
 
 st.plotly_chart(fig, use_container_width=True)
-
 
 # =========================
 # REGIÃO
