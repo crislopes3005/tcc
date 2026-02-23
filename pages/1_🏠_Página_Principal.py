@@ -218,7 +218,7 @@ fig = px.bar(
     orientation="h",
     barmode="relative",
     color_discrete_map={
-        "Masculino": "#7A8FA6",
+        "Masculino": "#B0B0B0",
         "Feminino": "#5B7C99"
     }
 )
