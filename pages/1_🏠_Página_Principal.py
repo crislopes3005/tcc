@@ -128,39 +128,83 @@ st.plotly_chart(fig, use_container_width=True)
 
 
 # =========================
-# PIRÂMIDE ETÁRIA (SEM NEGATIVO)
+# PIRÂMIDE ETÁRIA (valores visuais positivos)
 # =========================
+
 st.divider()
 st.markdown("""
 **Distribuição por Faixa Etária e Gênero**
 
-O gráfico permite comparar a participação de homens e mulheres 
-em diferentes faixas etárias.
+O gráfico apresenta a estrutura etária por sexo.
+Os valores são exibidos de forma positiva para facilitar a leitura.
 """)
 
-df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"])
+df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"]).copy()
 
 contagem = (
-    df_idade.groupby(["faixaEtaria", "sex_final"])
+    df_idade
+    .groupby(["faixaEtaria", "sex_final"])
     .size()
     .reset_index(name="Participantes")
+)
+
+ordem_faixas = [
+    "0 a 12 anos",
+    "13 a 17 anos",
+    "18 a 24 anos",
+    "25 a 44 anos",
+    "45 a 59 anos",
+    "Maior de 60 anos"
+]
+
+contagem["faixaEtaria"] = pd.Categorical(
+    contagem["faixaEtaria"],
+    categories=ordem_faixas,
+    ordered=True
+)
+
+contagem = contagem.sort_values("faixaEtaria")
+
+# Criar coluna para plotagem (homens negativos internamente)
+contagem["valor_plot"] = contagem.apply(
+    lambda row: -row["Participantes"] if row["sex_final"] == "Masculino"
+    else row["Participantes"],
+    axis=1
 )
 
 fig = px.bar(
     contagem,
     y="faixaEtaria",
-    x="Participantes",
+    x="valor_plot",
     color="sex_final",
     orientation="h",
-    barmode="group",
-    text="Participantes",
+    barmode="relative",
     color_discrete_map={
         "Masculino": "#B0B0B0",
         "Feminino": "#5B7C99"
     }
 )
 
-fig.update_traces(textposition="outside")
+# 🔹 Mostrar rótulos sempre positivos
+fig.update_traces(
+    text=contagem["Participantes"],
+    textposition="outside"
+)
+
+# 🔹 Ajustar eixo para mostrar apenas valores absolutos
+max_val = contagem["Participantes"].max()
+
+fig.update_xaxes(
+    range=[-max_val * 1.2, max_val * 1.2],
+    tickvals=list(range(-int(max_val), int(max_val)+1, int(max_val/4) if max_val > 0 else 1)),
+    ticktext=[str(abs(x)) for x in list(range(-int(max_val), int(max_val)+1, int(max_val/4) if max_val > 0 else 1))]
+)
+
+fig.update_layout(
+    xaxis_title="Participantes",
+    yaxis_title="Faixa Etária"
+)
+
 st.plotly_chart(fig, use_container_width=True)
 
 
