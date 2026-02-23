@@ -236,7 +236,7 @@ st.plotly_chart(fig, use_container_width=True)
 # =========================
 # 3️⃣ REGIÃO (BARRA)
 # =========================
-with col3:
+#with col3:
     contagem = df_participantes["regiao"].value_counts().reset_index()
     contagem.columns = ["Regiao", "Participantes"]
 
