@@ -241,7 +241,7 @@ with col_grafico:
     contagem = contagem.sort_values("Participantes", ascending=False)
 
     contagem["cor"] = contagem["Regiao"].apply(
-        lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
+        lambda x: "#5B7C99" if x in ["N", "Norte"] else "#D3D3D3"
     )
 
     fig = px.bar(
@@ -263,7 +263,7 @@ with col_grafico:
 st.divider()
 
 # =========================
-# PERFIL DE OCUPAÇÃO - BARRA HORIZONTAL ELEGANTE
+# PERFIL DE OCUPAÇÃO 
 # =========================
 
 st.divider()
@@ -318,9 +318,4 @@ with col_grafico:
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
-    
-# RODAPÉ
-# =========================
-st.divider()
-st.subheader('Autora do projeto')
-st.write("Cristiane Lopes de Assis")
+
