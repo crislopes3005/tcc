@@ -304,7 +304,75 @@ with col_grafico:
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
+# =========================
+# PERFIL DE OCUPAÇÃO - PARETO
+# =========================
 
+st.divider()
+
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Perfil de Ocupação (Análise de Pareto)
+
+O gráfico apresenta a distribuição das ocupações em ordem decrescente,
+acompanhada da curva de percentual acumulado.
+
+A visualização permite identificar a concentração da participação
+em determinadas categorias ocupacionais.
+""")
+
+with col_grafico:
+
+    contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
+    contagem.columns = ["Ocupacao", "Participantes"]
+    contagem = contagem.sort_values("Participantes", ascending=False)
+
+    # Percentual acumulado
+    contagem["Percentual"] = contagem["Participantes"] / contagem["Participantes"].sum() * 100
+    contagem["Percentual_Acumulado"] = contagem["Percentual"].cumsum()
+
+    # Destaque visual
+    contagem["cor"] = contagem["Ocupacao"].apply(
+        lambda x: "#5B7C99" if x in ["servidor_publico", "empresa_publica"] else "#D3D3D3"
+    )
+
+    # Gráfico de barras
+    fig = px.bar(
+        contagem,
+        x="Ocupacao",
+        y="Participantes",
+        color="cor",
+        color_discrete_map="identity",
+        text="Participantes"
+    )
+
+    fig.update_traces(textposition="outside")
+
+    # Linha acumulada
+    fig.add_scatter(
+        x=contagem["Ocupacao"],
+        y=contagem["Percentual_Acumulado"],
+        mode="lines+markers",
+        name="% acumulado",
+        yaxis="y2",
+        line=dict(color="#2F4F4F", width=3)
+    )
+
+    # Segundo eixo Y
+    fig.update_layout(
+        yaxis=dict(title="Participantes"),
+        yaxis2=dict(
+            title="% acumulado",
+            overlaying="y",
+            side="right",
+            range=[0, 100]
+        ),
+        showlegend=True
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 # =========================
 # RODAPÉ
 # =========================
