@@ -289,7 +289,7 @@ with col_grafico:
     contagem.columns = ["Ocupacao", "Participantes"]
 
     # 🔹 Ordenar decrescente (maior primeiro)
-    contagem = contagem.sort_values("Participantes", ascending=False)
+    contagem = contagem.sort_values("Participantes", ascending=True)
 
     total = contagem["Participantes"].sum()
     contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
