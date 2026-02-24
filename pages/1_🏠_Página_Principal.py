@@ -143,7 +143,7 @@ with col_grafico:
 st.divider()
 
 # =========================
-# 2️⃣ PIRÂMIDE ETÁRIA
+# PIRÂMIDE ETÁRIA COM %
 # =========================
 
 col_texto, col_grafico = st.columns([1, 2])
@@ -152,21 +152,22 @@ with col_texto:
     st.markdown("""
 ### Estrutura Etária por Gênero
 
-O gráfico permite comparar a distribuição de homens e mulheres
-em diferentes faixas etárias.
-
-A visualização auxilia na identificação de concentrações
-geracionais na participação.
+A pirâmide apresenta a distribuição etária dos participantes,
+incluindo valores absolutos e percentuais.
 """)
 
 with col_grafico:
-    df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"])
+
+    df_idade = df_participantes.dropna(subset=["faixaEtaria", "sex_final"]).copy()
 
     contagem = (
         df_idade.groupby(["faixaEtaria", "sex_final"])
         .size()
         .reset_index(name="Participantes")
     )
+
+    total = contagem["Participantes"].sum()
+    contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
 
     ordem_faixas = [
         "0 a 12 anos",
@@ -191,6 +192,11 @@ with col_grafico:
         axis=1
     )
 
+    contagem["label"] = (
+        contagem["Participantes"].astype(str) +
+        " (" + contagem["Percentual"].astype(str) + "%)"
+    )
+
     fig = px.bar(
         contagem,
         y="faixaEtaria",
@@ -198,7 +204,7 @@ with col_grafico:
         color="sex_final",
         orientation="h",
         barmode="relative",
-        text="Participantes",
+        text="label",
         color_discrete_map={
             "Masculino": "#B0B0B0",
             "Feminino": "#5B7C99"
@@ -215,11 +221,9 @@ with col_grafico:
     )
 
     st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
+    
 # =========================
-# 3️⃣ REGIÃO
+# REGIÃO COM %
 # =========================
 
 col_texto, col_grafico = st.columns([1, 2])
@@ -228,20 +232,26 @@ with col_texto:
     st.markdown("""
 ### Participação Regional
 
-As regiões Norte e Nordeste são destacadas
-por sua relevância no debate sobre desigualdade territorial.
-
-O gráfico permite observar a concentração regional
-dos participantes.
+O gráfico apresenta valores absolutos e percentuais,
+permitindo avaliar a concentração territorial.
 """)
 
 with col_grafico:
+
     contagem = df_participantes["regiao"].value_counts().reset_index()
     contagem.columns = ["Regiao", "Participantes"]
     contagem = contagem.sort_values("Participantes", ascending=False)
 
+    total = contagem["Participantes"].sum()
+    contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
+
+    contagem["label"] = (
+        contagem["Participantes"].astype(str) +
+        " (" + contagem["Percentual"].astype(str) + "%)"
+    )
+
     contagem["cor"] = contagem["Regiao"].apply(
-        lambda x: "#5B7C99" if x in ["N", "Norte"] else "#D3D3D3"
+        lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
     )
 
     fig = px.bar(
@@ -250,18 +260,18 @@ with col_grafico:
         y="Participantes",
         color="cor",
         color_discrete_map="identity",
-        text="Participantes"
+        text="label"
     )
 
-    fig.update_layout(showlegend=False,
-                      xaxis=dict(categoryorder="total descending"))
+    fig.update_layout(
+        showlegend=False,
+        xaxis=dict(categoryorder="total descending")
+    )
 
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
+    
 # =========================
 # PERFIL DE OCUPAÇÃO 
 # =========================
