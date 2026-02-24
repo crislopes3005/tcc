@@ -101,6 +101,71 @@ if df_vulneraveis.empty:
     st.stop()
 
 # ==========================================================
+# FUNÇÃO BARRA HORIZONTAL
+# ==========================================================
+def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
+
+    col_texto, col_grafico = st.columns([1, 2])
+
+    with col_texto:
+        st.markdown(f"### {titulo}\n\n{descricao}")
+
+    with col_grafico:
+        contagem = df_base[coluna].value_counts().reset_index()
+        contagem.columns = ["Categoria", "Participantes"]
+        contagem = contagem.sort_values("Participantes", ascending=True)
+
+        contagem["cor"] = contagem["Categoria"].apply(
+            lambda x: "#5B7C99" if x in destaques else "#D3D3D3"
+        )
+
+        fig = px.bar(
+            contagem,
+            y="Categoria",
+            x="Participantes",
+            orientation="h",
+            color="cor",
+            color_discrete_map="identity",
+            text="Participantes"
+        )
+
+        fig.update_layout(showlegend=False)
+        fig.update_traces(textposition="outside")
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+# ==========================================================
+# 2️⃣ PBF
+# ==========================================================
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Beneficiários do PBF
+
+Destaca-se a proporção de beneficiários do Programa Bolsa Família.
+""")
+
+with col_grafico:
+    contagem = df_vulneraveis["familiaBeneficiariaPBF"].value_counts().reset_index()
+    contagem.columns = ["PBF", "Participantes"]
+
+    cores = {True: "#5B7C99", False: "#D3D3D3"}
+
+    fig = px.pie(contagem, names="PBF", values="Participantes", hole=0.4)
+
+    fig.update_traces(
+        marker=dict(colors=[cores.get(v, "#CCCCCC") for v in contagem["PBF"]]),
+        textinfo="percent+label"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+# ==========================================================
 # 1️⃣ PIRÂMIDE ETÁRIA
 # ==========================================================
 col_texto, col_grafico = st.columns([1, 2])
@@ -162,71 +227,6 @@ with col_grafico:
 
     fig.update_traces(textposition="outside")
     fig.update_xaxes(showticklabels=False, showgrid=False)
-
-    st.plotly_chart(fig, use_container_width=True)
-
-st.divider()
-
-# ==========================================================
-# FUNÇÃO BARRA HORIZONTAL
-# ==========================================================
-def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
-
-    col_texto, col_grafico = st.columns([1, 2])
-
-    with col_texto:
-        st.markdown(f"### {titulo}\n\n{descricao}")
-
-    with col_grafico:
-        contagem = df_base[coluna].value_counts().reset_index()
-        contagem.columns = ["Categoria", "Participantes"]
-        contagem = contagem.sort_values("Participantes", ascending=True)
-
-        contagem["cor"] = contagem["Categoria"].apply(
-            lambda x: "#5B7C99" if x in destaques else "#D3D3D3"
-        )
-
-        fig = px.bar(
-            contagem,
-            y="Categoria",
-            x="Participantes",
-            orientation="h",
-            color="cor",
-            color_discrete_map="identity",
-            text="Participantes"
-        )
-
-        fig.update_layout(showlegend=False)
-        fig.update_traces(textposition="outside")
-
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.divider()
-
-# ==========================================================
-# 2️⃣ PBF
-# ==========================================================
-col_texto, col_grafico = st.columns([1, 2])
-
-with col_texto:
-    st.markdown("""
-### Beneficiários do PBF
-
-Destaca-se a proporção de beneficiários do Programa Bolsa Família.
-""")
-
-with col_grafico:
-    contagem = df_vulneraveis["familiaBeneficiariaPBF"].value_counts().reset_index()
-    contagem.columns = ["PBF", "Participantes"]
-
-    cores = {True: "#5B7C99", False: "#D3D3D3"}
-
-    fig = px.pie(contagem, names="PBF", values="Participantes", hole=0.4)
-
-    fig.update_traces(
-        marker=dict(colors=[cores.get(v, "#CCCCCC") for v in contagem["PBF"]]),
-        textinfo="percent+label"
-    )
 
     st.plotly_chart(fig, use_container_width=True)
 
