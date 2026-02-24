@@ -287,7 +287,9 @@ with col_grafico:
 
     contagem = df_participantes["ocupacao_grupo"].value_counts().reset_index()
     contagem.columns = ["Ocupacao", "Participantes"]
-    contagem = contagem.sort_values("Participantes", ascending=True)
+
+    # 🔹 Ordenar decrescente (maior primeiro)
+    contagem = contagem.sort_values("Participantes", ascending=False)
 
     total = contagem["Participantes"].sum()
     contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
@@ -304,18 +306,19 @@ with col_grafico:
         orientation="h",
         color="cor",
         color_discrete_map="identity",
-        text=contagem["Participantes"].astype(str) + 
+        text=contagem["Participantes"].astype(str) +
              " (" + contagem["Percentual"].astype(str) + "%)"
     )
 
+    # 🔹 Aqui está o segredo para manter maior em cima
     fig.update_layout(
         showlegend=False,
-        yaxis_title="",
-        xaxis_title="Participantes",
-        margin=dict(l=10, r=10, t=10, b=10)
+        yaxis=dict(
+            categoryorder="array",
+            categoryarray=contagem["Ocupacao"]  # mantém a ordem exata
+        )
     )
 
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
-
