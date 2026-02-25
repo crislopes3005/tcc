@@ -369,50 +369,37 @@ with col_grafico:
 
     st.plotly_chart(fig, use_container_width=True)
 
-# =========================
-# MAPA REGIONAL USANDO SHAPE DAS UFs
-# =========================
-
-import requests
+import json
 
 st.divider()
 st.subheader("Distribuição Regional dos Participantes")
 
+# 🔹 Contagem por região
 df_mapa = df_participantes.copy()
 
-# 🔹 Mapeamento UF → Região
-mapa_uf_regiao = {
-    "AC":"Norte","AP":"Norte","AM":"Norte","PA":"Norte","RO":"Norte","RR":"Norte","TO":"Norte",
-    "AL":"Nordeste","BA":"Nordeste","CE":"Nordeste","MA":"Nordeste","PB":"Nordeste","PE":"Nordeste","PI":"Nordeste","RN":"Nordeste","SE":"Nordeste",
-    "DF":"Centro-Oeste","GO":"Centro-Oeste","MT":"Centro-Oeste","MS":"Centro-Oeste",
-    "ES":"Sudeste","MG":"Sudeste","RJ":"Sudeste","SP":"Sudeste",
-    "PR":"Sul","RS":"Sul","SC":"Sul"
+mapa_regioes = {
+    "N": "Norte",
+    "NE": "Nordeste",
+    "CO": "Centro-Oeste",
+    "SE": "Sudeste",
+    "S": "Sul"
 }
 
-df_mapa["Regiao"] = df_mapa["siglaUf"].map(mapa_uf_regiao)
+df_mapa["Regiao"] = df_mapa["regiao"].replace(mapa_regioes)
 
-# 🔹 Total por região
-total_regiao = df_mapa["Regiao"].value_counts()
+contagem = df_mapa["Regiao"].value_counts().reset_index()
+contagem.columns = ["Regiao", "Participantes"]
 
-# 🔹 Atribuir valor regional a cada UF
-df_mapa["Participantes_Regiao"] = df_mapa["Regiao"].map(total_regiao)
-
-df_plot = (
-    df_mapa.groupby(["siglaUf","Participantes_Regiao"])
-    .size()
-    .reset_index(name="dummy")
-)
-
-# 🔹 Usar o mesmo geojson das UFs
-url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
-geojson = requests.get(url).json()
+# 🔹 Carregar geojson local
+with open("data/regioes_oficiais.geojson", "r", encoding="utf-8") as f:
+    geojson = json.load(f)
 
 fig = px.choropleth(
-    df_plot,
+    contagem,
     geojson=geojson,
-    locations="siglaUf",
-    featureidkey="properties.sigla",
-    color="Participantes_Regiao",
+    locations="Regiao",
+    featureidkey="properties.regiao",
+    color="Participantes",
     color_continuous_scale="Blues"
 )
 
