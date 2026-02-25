@@ -370,11 +370,8 @@ with col_grafico:
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# MAPA DO BRASIL - GRANDES REGIÕES
+# MAPA POR GRANDES REGIÕES (SEM REQUESTS)
 # =========================
-
-import json
-import requests
 
 st.divider()
 
@@ -384,18 +381,15 @@ with col_texto:
     st.markdown("""
 ### Distribuição Regional
 
-O mapa apresenta a distribuição territorial dos participantes
-por grandes regiões do Brasil.
-
-A visualização espacial permite avaliar a concentração regional
-da participação e reforça a dimensão territorial da representatividade.
+O mapa representa a intensidade da participação por grandes regiões,
+permitindo visualizar a concentração territorial da representatividade.
 """)
 
 with col_grafico:
 
-    # Padronizar nomes
     df_mapa = df_participantes.copy()
 
+    # Padronizar nomes
     mapa_regioes = {
         "N": "Norte",
         "NE": "Nordeste",
@@ -409,19 +403,33 @@ with col_grafico:
     contagem = df_mapa["regiao_nome"].value_counts().reset_index()
     contagem.columns = ["Regiao", "Participantes"]
 
-    # GeoJSON simplificado das regiões
-    url = "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-100-mun-regioes.json"
-    geojson = requests.get(url).json()
+    # Coordenadas centrais aproximadas das regiões
+    coordenadas = {
+        "Norte": (-3, -60),
+        "Nordeste": (-10, -40),
+        "Centro-Oeste": (-15, -55),
+        "Sudeste": (-20, -45),
+        "Sul": (-27, -50)
+    }
 
-    fig = px.choropleth(
+    contagem["lat"] = contagem["Regiao"].map(lambda x: coordenadas[x][0])
+    contagem["lon"] = contagem["Regiao"].map(lambda x: coordenadas[x][1])
+
+    fig = px.scatter_geo(
         contagem,
-        geojson=geojson,
-        locations="Regiao",
-        featureidkey="properties.nome",
+        lat="lat",
+        lon="lon",
+        size="Participantes",
         color="Participantes",
-        color_continuous_scale="Blues"
+        hover_name="Regiao",
+        scope="south america",
+        color_continuous_scale="Blues",
+        projection="mercator"
     )
 
-    fig.update_geos(fitbounds="locations", visible=False)
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False
+    )
 
     st.plotly_chart(fig, use_container_width=True)
