@@ -1,0 +1,10 @@
+{
+"type": "FeatureCollection",
+"features": [
+{"type":"Feature","properties":{"regiao":"Norte"},"geometry":{"type":"MultiPolygon","coordinates":[[[[-73.99,5.27],[-50,5.27],[-50,-7.5],[-73.99,-7.5],[-73.99,5.27]]]]}},
+{"type":"Feature","properties":{"regiao":"Nordeste"},"geometry":{"type":"MultiPolygon","coordinates":[[[[-50,5.27],[-34,-1],[-34,-20],[-50,-20],[-50,5.27]]]]}},
+{"type":"Feature","properties":{"regiao":"Centro-Oeste"},"geometry":{"type":"MultiPolygon","coordinates":[[[[-60,-7.5],[-45,-7.5],[-45,-25],[-60,-25],[-60,-7.5]]]]}},
+{"type":"Feature","properties":{"regiao":"Sudeste"},"geometry":{"type":"MultiPolygon","coordinates":[[[[-50,-15],[-39,-15],[-39,-30],[-50,-30],[-50,-15]]]]}},
+{"type":"Feature","properties":{"regiao":"Sul"},"geometry":{"type":"MultiPolygon","coordinates":[[[[-58,-25],[-48,-25],[-48,-35],[-58,-35],[-58,-25]]]]}}
+]
+}
