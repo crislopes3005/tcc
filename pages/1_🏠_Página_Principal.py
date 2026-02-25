@@ -271,6 +271,44 @@ with col_grafico:
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
+
+# =========================
+# MAPA DO BRASIL POR UF
+# =========================
+
+st.divider()
+st.subheader("Distribuição Territorial dos Participantes")
+
+df_mapa = df_participantes.copy()
+
+contagem = df_mapa["siglaUf"].value_counts().reset_index()
+contagem.columns = ["UF", "Participantes"]
+
+fig = px.choropleth(
+    contagem,
+    locations="UF",
+    locationmode="geojson-id",
+    color="Participantes",
+    scope="south america",
+    color_continuous_scale="Blues"
+)
+
+fig.update_geos(
+    visible=False,
+    resolution=50,
+    showcountries=True,
+    countrycolor="Black"
+)
+
+fig.update_layout(
+    geo=dict(
+        scope="south america",
+        center={"lat": -14, "lon": -52},
+        projection_scale=3.5
+    )
+)
+
+st.plotly_chart(fig, use_container_width=True)
     
 # =========================
 # PERFIL DE OCUPAÇÃO 
