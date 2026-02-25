@@ -33,6 +33,39 @@ critérios de vulnerabilidade socioeconômica.
 st.divider()
 
 # =========================
+# FILTRO POR PROCESSO
+# =========================
+st.sidebar.header("🔎 Filtros")
+
+df_filtrado = df.copy()
+
+# Processo
+lista_processos = df["processo"].dropna().unique().tolist()
+lista_processos.insert(0, "Todos")
+
+processo_selecionado = st.sidebar.selectbox(
+    "Selecione o processo:",
+    lista_processos
+)
+
+if processo_selecionado != "Todos":
+    df_filtrado = df_filtrado[df_filtrado["processo"] == processo_selecionado]
+
+# Estado da proposta (opcional)
+lista_status = df_filtrado["state"].dropna().unique().tolist()
+lista_status.insert(0, "Todos")
+
+status_selecionado = st.sidebar.selectbox(
+    "Selecione o estado da proposta:",
+    lista_status
+)
+
+if status_selecionado != "Todos":
+    df_filtrado = df_filtrado[df_filtrado["state"] == status_selecionado]
+
+st.divider()
+
+# =========================
 # DEFINIÇÃO DOS PESOS
 # =========================
 st.sidebar.header("⚖️ Pesos das Características")
@@ -52,36 +85,29 @@ def calcular_ipr(row):
 
     score = 0
 
-    # Programa Bolsa Família (robusto)
     valor_pbf = row.get("familiaBeneficiariaPBF")
     if pd.notnull(valor_pbf):
         if str(valor_pbf).strip().lower() in ["true", "sim", "1"]:
             score += peso_pbf
 
-    # Baixa renda
     if row.get("faixaRendaFamiliarPerCapita") in [
         "De 0 até R$ 109",
         "De R$ 109,01 até R$ 218"
     ]:
         score += peso_renda
 
-    # Raça
     if row.get("racaCor") in ["Preta", "Parda", "Indígena"]:
         score += peso_raca
 
-    # GPTE
     if row.get("gpte") not in [0, "000", None, "Nenhuma"]:
         score += peso_gpte
 
-    # Região
     if row.get("regiao") in ["NO", "NE", "Norte", "Nordeste"]:
         score += peso_regiao
 
-    # Sexo feminino
     if row.get("sex_final") == "Feminino":
         score += peso_sexo
 
-    # Jovens até 29
     idade = row.get("idade_final")
     if isinstance(idade, (int, float)) and idade <= 29:
         score += peso_idade
@@ -89,14 +115,13 @@ def calcular_ipr(row):
     return score
 
 
-df["IPR"] = df.apply(calcular_ipr, axis=1)
+df_filtrado["IPR"] = df_filtrado.apply(calcular_ipr, axis=1)
 
 st.divider()
 
 # =========================
-# ESCOLHA DO EIXO DE ORDENAÇÃO
+# ESCOLHA DO EIXO
 # =========================
-
 st.subheader("Configuração do Ranking")
 
 soma_pesos = (
@@ -111,10 +136,7 @@ criterio = st.radio(
 )
 
 if criterio == "Automático":
-    if soma_pesos == 0:
-        criterio_final = "votos"
-    else:
-        criterio_final = "IPR"
+    criterio_final = "votos" if soma_pesos == 0 else "IPR"
 elif criterio == "Votos":
     criterio_final = "votos"
 else:
@@ -128,13 +150,13 @@ st.divider()
 # RANKINGS BASE
 # =========================
 
-ranking_votos = df.sort_values(by="votos", ascending=False).reset_index(drop=True)
+ranking_votos = df_filtrado.sort_values(by="votos", ascending=False).reset_index(drop=True)
 ranking_votos["pos_votos"] = ranking_votos.index + 1
 
-ranking_ipr = df.sort_values(by="IPR", ascending=False).reset_index(drop=True)
+ranking_ipr = df_filtrado.sort_values(by="IPR", ascending=False).reset_index(drop=True)
 ranking_ipr["pos_ipr"] = ranking_ipr.index + 1
 
-df_rank = df.merge(
+df_rank = df_filtrado.merge(
     ranking_votos[["id_x", "pos_votos"]],
     on="id_x"
 ).merge(
@@ -144,23 +166,18 @@ df_rank = df.merge(
 
 df_rank["Δ posição"] = df_rank["pos_votos"] - df_rank["pos_ipr"]
 
-# Ordenação dinâmica
 df_rank = df_rank.sort_values(by=criterio_final, ascending=False)
 
 df_rank.index = range(1, len(df_rank) + 1)
 df_rank.index.name = "Posição"
 
 # =========================
-# TABELA FINAL (COM EIXO)
+# TABELA FINAL
 # =========================
 
 tabela_final = df_rank[
-    ["titulo", "eixo", "votos", "IPR", "pos_votos", "Δ posição"]
+    ["titulo", "processo", "eixo", "votos", "IPR", "pos_votos", "Δ posição"]
 ].head(20)
-
-# =========================
-# ESTILIZAÇÃO
-# =========================
 
 def cor_delta(val):
     if val > 0:
@@ -187,7 +204,7 @@ st.dataframe(
 st.divider()
 
 # =========================
-# RESUMO ANALÍTICO
+# RESUMO
 # =========================
 
 subiram = (df_rank["Δ posição"] > 0).sum()
@@ -204,13 +221,12 @@ with col2:
 st.markdown("""
 ### Interpretação
 
-A variação de posição evidencia o impacto da incorporação de critérios
-socioeconômicos na priorização das propostas.
+O filtro por processo permite analisar separadamente diferentes
+arenas participativas.
 
-Quando nenhum peso é aplicado, a ordenação reproduz a lógica majoritária
-baseada exclusivamente em votos. Ao ativar pesos, observa-se alteração
-na hierarquia das propostas, permitindo simular cenários de priorização
-orientados por equidade e vulnerabilidade social.
+A alteração dos pesos modifica a hierarquia das propostas,
+evidenciando como critérios de vulnerabilidade socioeconômica
+podem impactar a priorização final.
 """)
 
 st.divider()
