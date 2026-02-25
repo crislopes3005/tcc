@@ -36,7 +36,7 @@ st.divider()
 # =========================
 st.sidebar.header("⚖️ Pesos das Características")
 
-peso_cadunico = st.sidebar.slider("Programa Bolsa Família (Cadastrado)", 0.0, 5.0, 2.0)
+peso_pbf = st.sidebar.slider("Programa Bolsa Família (Cadastrado)", 0.0, 5.0, 2.0)
 peso_renda = st.sidebar.slider("Baixa Renda per capita", 0.0, 5.0, 2.0)
 peso_raca = st.sidebar.slider("Raça Preta/Parda/Indígena", 0.0, 5.0, 1.0)
 peso_gpte = st.sidebar.slider("GPTE", 0.0, 5.0, 1.5)
@@ -54,7 +54,7 @@ def calcular_ipr(row):
 
     # CadÚnico
     if row.get("familiaBeneficiariaPBF") == "True":
-        score += peso_cadunico
+        score += peso_pbf
 
     # Baixa renda
     if row.get("faixaRendaFamiliarPerCapita") in [
