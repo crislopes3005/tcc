@@ -147,3 +147,70 @@ permitindo avaliar diferentes cenários de política pública.
 st.divider()
 st.subheader("Autora do projeto")
 st.write("Cristiane Lopes de Assis")
+
+# =========================
+# RANKING COM VARIAÇÃO DE POSIÇÃO
+# =========================
+
+st.subheader("Ranking Comparativo: Votos vs Índice")
+
+# Ranking por votos
+ranking_votos = (
+    df.sort_values(by="votos", ascending=False)
+      .reset_index(drop=True)
+)
+
+ranking_votos["pos_votos"] = ranking_votos.index + 1
+
+# Ranking por IPR
+ranking_ipr = (
+    df.sort_values(by="IPR", ascending=False)
+      .reset_index(drop=True)
+)
+
+ranking_ipr["pos_ipr"] = ranking_ipr.index + 1
+
+# Merge
+df_rank = df.merge(
+    ranking_votos[["id_x", "pos_votos"]],
+    on="id_x"
+).merge(
+    ranking_ipr[["id_x", "pos_ipr"]],
+    on="id_x"
+)
+
+# Calcular variação
+df_rank["Δ posição"] = df_rank["pos_votos"] - df_rank["pos_ipr"]
+
+# Ordenar pelo IPR
+df_rank = df_rank.sort_values("pos_ipr")
+
+df_rank.index = df_rank["pos_ipr"]
+df_rank.index.name = "Posição IPR"
+
+tabela_final = df_rank[
+    ["titulo", "votos", "IPR", "pos_votos", "Δ posição"]
+].head(20)
+
+# =========================
+# VISUALIZAÇÃO ESTILIZADA
+# =========================
+
+def cor_delta(val):
+    if val > 0:
+        return "color: green; font-weight: bold;"
+    elif val < 0:
+        return "color: red; font-weight: bold;"
+    else:
+        return "color: gray;"
+
+st.dataframe(
+    tabela_final.style
+        .format({
+            "IPR": "{:.2f}",
+            "votos": "{:,.0f}"
+        })
+        .background_gradient(subset=["IPR"], cmap="Blues")
+        .applymap(cor_delta, subset=["Δ posição"]),
+    use_container_width=True
+)
