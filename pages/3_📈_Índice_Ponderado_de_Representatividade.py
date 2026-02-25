@@ -169,6 +169,15 @@ tabela_final = df_rank[
     ["titulo", "processo", "eixo", "votos", "IPR", "pos_votos", "Δ posição"]
 ].head(20)
 
+def seta_delta(valor):
+    if valor > 0:
+        return f"▲ {valor}"
+    elif valor < 0:
+        return f"▼ {abs(valor)}"
+    else:
+        return "—"
+
+tabela_final["Δ posição"] = tabela_final["Δ posição"].apply(seta_delta)
 def cor_delta(val):
     if val > 0:
         return "color: #2E7D5A; font-weight: bold;"
