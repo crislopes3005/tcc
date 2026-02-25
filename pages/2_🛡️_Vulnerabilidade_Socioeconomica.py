@@ -101,7 +101,7 @@ if df_vulneraveis.empty:
     st.stop()
 
 # ==========================================================
-# FUNÇÃO BARRA HORIZONTAL
+# FUNÇÃO BARRA HORIZONTAL (DECRESCENTE + %)
 # ==========================================================
 def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
 
@@ -113,7 +113,17 @@ def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
     with col_grafico:
         contagem = df_base[coluna].value_counts().reset_index()
         contagem.columns = ["Categoria", "Participantes"]
-        contagem = contagem.sort_values("Participantes", ascending=True)
+
+        # 🔹 Ordem decrescente (maior primeiro)
+        contagem = contagem.sort_values("Participantes", ascending=False)
+
+        total = contagem["Participantes"].sum()
+        contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
+
+        contagem["label"] = (
+            contagem["Participantes"].astype(str) +
+            " (" + contagem["Percentual"].astype(str) + "%)"
+        )
 
         contagem["cor"] = contagem["Categoria"].apply(
             lambda x: "#5B7C99" if x in destaques else "#D3D3D3"
@@ -126,10 +136,18 @@ def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
             orientation="h",
             color="cor",
             color_discrete_map="identity",
-            text="Participantes"
+            text="label"
         )
 
-        fig.update_layout(showlegend=False)
+        # 🔹 Manter maior no topo
+        fig.update_layout(
+            showlegend=False,
+            yaxis=dict(
+                categoryorder="array",
+                categoryarray=contagem["Categoria"]
+            )
+        )
+
         fig.update_traces(textposition="outside")
 
         st.plotly_chart(fig, use_container_width=True)
@@ -137,24 +155,35 @@ def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
     st.divider()
 
 # ==========================================================
-# 2️⃣ PBF
+# 2️⃣ PBF (SIM / NÃO)
 # ==========================================================
+
 col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
 ### Beneficiários do PBF
 
-Destaca-se a proporção de beneficiários do Programa Bolsa Família.
+Apresenta-se a proporção de participantes beneficiários
+do Programa Bolsa Família.
 """)
 
 with col_grafico:
+
     contagem = df_vulneraveis["familiaBeneficiariaPBF"].value_counts().reset_index()
     contagem.columns = ["PBF", "Participantes"]
 
-    cores = {True: "#5B7C99", False: "#D3D3D3"}
+    # 🔹 Substituir True/False por Sim/Não
+    contagem["PBF"] = contagem["PBF"].map({True: "Sim", False: "Não"})
 
-    fig = px.pie(contagem, names="PBF", values="Participantes", hole=0.4)
+    cores = {"Sim": "#5B7C99", "Não": "#D3D3D3"}
+
+    fig = px.pie(
+        contagem,
+        names="PBF",
+        values="Participantes",
+        hole=0.4
+    )
 
     fig.update_traces(
         marker=dict(colors=[cores.get(v, "#CCCCCC") for v in contagem["PBF"]]),
@@ -166,16 +195,17 @@ with col_grafico:
 st.divider()
 
 # ==========================================================
-# 1️⃣ PIRÂMIDE ETÁRIA
+# 1️⃣ PIRÂMIDE ETÁRIA COM %
 # ==========================================================
+
 col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
 ### Estrutura Etária por Gênero
 
-A pirâmide permite comparar a distribuição de homens e mulheres
-entre os participantes vulneráveis.
+A pirâmide apresenta valores absolutos e percentuais
+da distribuição etária.
 """)
 
 with col_grafico:
@@ -186,6 +216,14 @@ with col_grafico:
         df_idade.groupby(["faixaEtaria", "sex_final"])
         .size()
         .reset_index(name="Participantes")
+    )
+
+    total = contagem["Participantes"].sum()
+    contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
+
+    contagem["label"] = (
+        contagem["Participantes"].astype(str) +
+        " (" + contagem["Percentual"].astype(str) + "%)"
     )
 
     ordem_faixas = [
@@ -218,7 +256,7 @@ with col_grafico:
         color="sex_final",
         orientation="h",
         barmode="relative",
-        text="Participantes",
+        text="label",
         color_discrete_map={
             "Masculino": "#B0B0B0",
             "Feminino": "#5B7C99"
