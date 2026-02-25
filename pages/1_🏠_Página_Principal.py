@@ -370,7 +370,7 @@ with col_grafico:
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# MAPA DO BRASIL - GRANDES REGIÕES (COROPLÉTICO REAL)
+# MAPA DO BRASIL - REGIÕES (SHAPE REAL)
 # =========================
 
 import json
@@ -383,9 +383,9 @@ with col_texto:
     st.markdown("""
 ### Distribuição Regional
 
-O mapa coroplético evidencia a intensidade da participação
-por grandes regiões do Brasil, reforçando a dimensão territorial
-da representatividade.
+O mapa coroplético utiliza o contorno oficial das regiões brasileiras,
+permitindo visualizar a intensidade da participação
+de forma territorialmente precisa.
 """)
 
 with col_grafico:
@@ -405,17 +405,9 @@ with col_grafico:
     contagem = df_mapa["regiao_nome"].value_counts().reset_index()
     contagem.columns = ["Regiao", "Participantes"]
 
-    # GeoJSON simplificado das 5 regiões (embutido)
-    geojson = {
-        "type": "FeatureCollection",
-        "features": [
-            {"type": "Feature","properties": {"nome": "Norte"},"geometry": {"type": "Polygon","coordinates": [[[-74,-7],[-74,5],[-50,5],[-50,-7],[-74,-7]]]}},
-            {"type": "Feature","properties": {"nome": "Nordeste"},"geometry": {"type": "Polygon","coordinates": [[[-50,-20],[-50,5],[-34,5],[-34,-20],[-50,-20]]]}},
-            {"type": "Feature","properties": {"nome": "Centro-Oeste"},"geometry": {"type": "Polygon","coordinates": [[[-60,-25],[-60,-7],[-45,-7],[-45,-25],[-60,-25]]]}},
-            {"type": "Feature","properties": {"nome": "Sudeste"},"geometry": {"type": "Polygon","coordinates": [[[-50,-30],[-50,-15],[-39,-15],[-39,-30],[-50,-30]]]}},
-            {"type": "Feature","properties": {"nome": "Sul"},"geometry": {"type": "Polygon","coordinates": [[[-58,-35],[-58,-25],[-48,-25],[-48,-35],[-58,-35]]]}}
-        ]
-    }
+    # 🔹 Ler geojson local
+    with open("data/regioes.geojson", "r", encoding="utf-8") as f:
+        geojson = json.load(f)
 
     fig = px.choropleth(
         contagem,
@@ -423,10 +415,12 @@ with col_grafico:
         locations="Regiao",
         featureidkey="properties.nome",
         color="Participantes",
-        color_continuous_scale="Blues",
-        scope="south america"
+        color_continuous_scale="Blues"
     )
 
-    fig.update_geos(fitbounds="locations", visible=False)
+    fig.update_geos(
+        fitbounds="locations",
+        visible=False
+    )
 
     st.plotly_chart(fig, use_container_width=True)
