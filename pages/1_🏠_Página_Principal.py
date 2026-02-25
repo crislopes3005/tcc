@@ -372,36 +372,67 @@ with col_grafico:
 # =========================
 # MAPA DO BRASIL - REGIÕES (SHAPE REAL)
 # =========================
+# =========================
+# MAPA REGIONAL USANDO SHAPE DAS UFs
+# =========================
 
 import json
 
-with open("data/regioes.geojson", "r", encoding="utf-8") as f:
-    geojson = json.load(f)
+st.divider()
 
-df_mapa = df_participantes.copy()
+col_texto, col_grafico = st.columns([1, 2])
 
-mapa_regioes = {
-    "N": "Norte",
-    "NE": "Nordeste",
-    "CO": "Centro-Oeste",
-    "SE": "Sudeste",
-    "S": "Sul"
-}
+with col_texto:
+    st.markdown("""
+### Distribuição Regional
 
-df_mapa["regiao_nome"] = df_mapa["regiao"].replace(mapa_regioes)
+O mapa utiliza o contorno oficial das Unidades da Federação,
+agregando os valores por grandes regiões.
 
-contagem = df_mapa["regiao_nome"].value_counts().reset_index()
-contagem.columns = ["Regiao", "Participantes"]
+Essa abordagem mantém precisão territorial,
+ao mesmo tempo em que permite análise regional consolidada.
+""")
 
-fig = px.choropleth(
-    contagem,
-    geojson=geojson,
-    locations="Regiao",
-    featureidkey="properties.nome",
-    color="Participantes",
-    color_continuous_scale="Blues"
-)
+with col_grafico:
 
-fig.update_geos(fitbounds="locations", visible=False)
+    # Carregar geojson das UFs (já usado anteriormente)
+    with open("data/ufs.geojson", "r", encoding="utf-8") as f:
+        geojson = json.load(f)
 
-st.plotly_chart(fig, use_container_width=True)
+    df_mapa = df_participantes.copy()
+
+    # 🔹 Mapeamento UF → Região
+    mapa_uf_regiao = {
+        "AC":"Norte","AP":"Norte","AM":"Norte","PA":"Norte","RO":"Norte","RR":"Norte","TO":"Norte",
+        "AL":"Nordeste","BA":"Nordeste","CE":"Nordeste","MA":"Nordeste","PB":"Nordeste","PE":"Nordeste","PI":"Nordeste","RN":"Nordeste","SE":"Nordeste",
+        "DF":"Centro-Oeste","GO":"Centro-Oeste","MT":"Centro-Oeste","MS":"Centro-Oeste",
+        "ES":"Sudeste","MG":"Sudeste","RJ":"Sudeste","SP":"Sudeste",
+        "PR":"Sul","RS":"Sul","SC":"Sul"
+    }
+
+    df_mapa["Regiao"] = df_mapa["siglaUf"].map(mapa_uf_regiao)
+
+    # 🔹 Total por região
+    total_regiao = df_mapa["Regiao"].value_counts()
+
+    # 🔹 Criar coluna com valor regional para cada UF
+    df_mapa["Participantes_Regiao"] = df_mapa["Regiao"].map(total_regiao)
+
+    df_plot = (
+        df_mapa.groupby(["siglaUf","Participantes_Regiao"])
+        .size()
+        .reset_index(name="dummy")
+    )
+
+    fig = px.choropleth(
+        df_plot,
+        geojson=geojson,
+        locations="siglaUf",
+        featureidkey="properties.sigla",
+        color="Participantes_Regiao",
+        color_continuous_scale="Blues"
+    )
+
+    fig.update_geos(fitbounds="locations", visible=False)
+
+    st.plotly_chart(fig, use_container_width=True)
