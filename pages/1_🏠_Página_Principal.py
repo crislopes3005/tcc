@@ -108,7 +108,7 @@ df_participantes = df_filtrado.drop_duplicates(subset='id_autor')
 st.divider()
 
 # =========================
-# 1️⃣ CADÚNICO
+# CADÚNICO
 # =========================
 
 col_texto, col_grafico = st.columns([1, 2])
@@ -117,11 +117,14 @@ with col_texto:
     st.markdown("""
 ### Participantes no CadÚnico
 
-Destacam-se em azul os participantes cadastrados no CadÚnico,
-indicador central de vulnerabilidade socioeconômica.
+O destaque aos participantes cadastrados no CadÚnico tem como objetivo
+evidenciar o grau de inclusão de grupos socioeconomicamente vulneráveis
+nos processos participativos analisados.
 
-A proporção permite avaliar o grau de inclusão social
-dos participantes do processo.
+Considerando que o CadÚnico é o principal instrumento de identificação
+de famílias de baixa renda no Brasil, sua presença entre os participantes
+constitui indicador relevante para avaliar se a participação social
+alcança públicos historicamente sub-representados.
 """)
 
 with col_grafico:
@@ -150,10 +153,15 @@ col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
-### Estrutura Etária por Gênero
+### ### Estrutura Etária por Gênero
 
-A pirâmide apresenta a distribuição etária dos participantes,
-incluindo valores absolutos e percentuais.
+A visualização em formato de pirâmide permite analisar a composição
+etária e de gênero dos participantes, identificando possíveis
+concentrações geracionais e diferenças entre homens e mulheres.
+
+A escolha desse formato facilita a comparação visual entre os sexos,
+contribuindo para avaliar a diversidade demográfica da participação
+e possíveis assimetrias na inclusão de determinados grupos.
 """)
 
 with col_grafico:
@@ -232,8 +240,13 @@ with col_texto:
     st.markdown("""
 ### Participação Regional
 
-O gráfico apresenta valores absolutos e percentuais,
-permitindo avaliar a concentração territorial.
+A regiões Norte e Nordeste são destacadas por apresentarem,
+historicamente, maiores indicadores de vulnerabilidade socioeconômica.
+
+A análise territorial permite avaliar se os processos participativos
+atingem de forma equilibrada diferentes regiões do país ou se há
+concentração regional da participação, o que pode indicar desigualdades
+no acesso às plataformas digitais e aos mecanismos de deliberação pública.
 """)
 
 with col_grafico:
@@ -251,7 +264,7 @@ with col_grafico:
     )
 
     contagem["cor"] = contagem["Regiao"].apply(
-        lambda x: "#5B7C99" if x in ["N", "NE", "Norte", "Nordeste"] else "#D3D3D3"
+        lambda x: "#5B7C99" if x in ["N", "NE", "Norte","Nordeste"] else "#D3D3D3"
     )
 
     fig = px.bar(
@@ -273,42 +286,6 @@ with col_grafico:
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# MAPA DO BRASIL POR UF (FUNCIONA)
-# =========================
-
-import json
-import requests
-
-st.divider()
-st.subheader("Distribuição Territorial dos Participantes")
-
-# Contagem por UF
-df_mapa = df_participantes.copy()
-
-contagem = df_mapa["siglaUf"].value_counts().reset_index()
-contagem.columns = ["UF", "Participantes"]
-
-# GeoJSON oficial dos estados do Brasil
-url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
-geojson = requests.get(url).json()
-
-fig = px.choropleth(
-    contagem,
-    geojson=geojson,
-    locations="UF",
-    featureidkey="properties.sigla",
-    color="Participantes",
-    color_continuous_scale="Blues"
-)
-
-fig.update_geos(
-    fitbounds="locations",
-    visible=False
-)
-
-st.plotly_chart(fig, use_container_width=True)
-    
-# =========================
 # PERFIL DE OCUPAÇÃO 
 # =========================
 
@@ -318,15 +295,15 @@ col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
-### Perfil de Ocupação
+### ### Perfil de Ocupação
 
-A distribuição evidencia o perfil socioocupacional dos participantes.
+A distribuição ocupacional permite observar o perfil socioeconômico
+dos participantes e identificar possíveis concentrações institucionais.
 
-Destacam-se servidores públicos e trabalhadores de empresas públicas,
-considerando sua possível maior familiaridade com processos institucionais.
-
-A ordenação decrescente facilita a identificação das categorias
-com maior concentração de participação.
+O destaque a servidores públicos e trabalhadores de empresas públicas
+busca evidenciar a presença de grupos com maior proximidade ao Estado,
+o que pode indicar maior familiaridade com mecanismos formais
+de participação e influenciar o padrão de representatividade observado.
 """)
 
 with col_grafico:
@@ -368,41 +345,3 @@ with col_grafico:
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
-
-import json
-
-st.divider()
-st.subheader("Distribuição Regional dos Participantes")
-
-# 🔹 Contagem por região
-df_mapa = df_participantes.copy()
-
-mapa_regioes = {
-    "N": "Norte",
-    "NE": "Nordeste",
-    "CO": "Centro-Oeste",
-    "SE": "Sudeste",
-    "S": "Sul"
-}
-
-df_mapa["Regiao"] = df_mapa["regiao"].replace(mapa_regioes)
-
-contagem = df_mapa["Regiao"].value_counts().reset_index()
-contagem.columns = ["Regiao", "Participantes"]
-
-# 🔹 Carregar geojson local
-with open("data/regioes_oficiais.geojson", "r", encoding="utf-8") as f:
-    geojson = json.load(f)
-
-fig = px.choropleth(
-    contagem,
-    geojson=geojson,
-    locations="Regiao",
-    featureidkey="properties.regiao",
-    color="Participantes",
-    color_continuous_scale="Blues"
-)
-
-fig.update_geos(fitbounds="locations", visible=False)
-
-st.plotly_chart(fig, use_container_width=True)
