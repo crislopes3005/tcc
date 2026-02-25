@@ -51,17 +51,6 @@ processo_selecionado = st.sidebar.selectbox(
 if processo_selecionado != "Todos":
     df_filtrado = df_filtrado[df_filtrado["processo"] == processo_selecionado]
 
-# Estado da proposta (opcional)
-lista_status = df_filtrado["state"].dropna().unique().tolist()
-lista_status.insert(0, "Todos")
-
-status_selecionado = st.sidebar.selectbox(
-    "Selecione o estado da proposta:",
-    lista_status
-)
-
-if status_selecionado != "Todos":
-    df_filtrado = df_filtrado[df_filtrado["state"] == status_selecionado]
 
 st.divider()
 
