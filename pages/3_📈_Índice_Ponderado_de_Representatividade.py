@@ -41,7 +41,6 @@ peso_renda = st.sidebar.slider("Baixa Renda per capita", 0.0, 5.0, 2.0)
 peso_raca = st.sidebar.slider("Raça Preta/Parda/Indígena", 0.0, 5.0, 1.0)
 peso_gpte = st.sidebar.slider("GPTE", 0.0, 5.0, 1.5)
 peso_regiao = st.sidebar.slider("Região Norte/Nordeste", 0.0, 5.0, 1.0)
-peso_familia = st.sidebar.slider("Família numerosa (>=5)", 0.0, 5.0, 1.0)
 peso_sexo = st.sidebar.slider("Sexo feminino", 0.0, 5.0, 1.0)
 peso_idade = st.sidebar.slider("Jovens (até 29 anos)", 0.0, 5.0, 1.0)
 
