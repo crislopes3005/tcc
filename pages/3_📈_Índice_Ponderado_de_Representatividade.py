@@ -36,7 +36,7 @@ st.divider()
 # =========================
 st.sidebar.header("⚖️ Pesos das Características")
 
-peso_cadunico = st.sidebar.slider("CadÚnico (Cadastrado)", 0.0, 5.0, 2.0)
+peso_cadunico = st.sidebar.slider("Programa Bolsa Família (Cadastrado)", 0.0, 5.0, 2.0)
 peso_renda = st.sidebar.slider("Baixa Renda per capita", 0.0, 5.0, 2.0)
 peso_raca = st.sidebar.slider("Raça Preta/Parda/Indígena", 0.0, 5.0, 1.0)
 peso_gpte = st.sidebar.slider("GPTE", 0.0, 5.0, 1.5)
@@ -53,7 +53,7 @@ def calcular_ipr(row):
     score = 0
 
     # CadÚnico
-    if row.get("cadunico") == "Cadastrado":
+    if row.get("familiaBeneficiariaPBF") == "True":
         score += peso_cadunico
 
     # Baixa renda
@@ -75,16 +75,12 @@ def calcular_ipr(row):
     if row.get("regiao") in ["NO", "NE", "Norte", "Nordeste"]:
         score += peso_regiao
 
-    # Família numerosa
-    if row.get("quantidadePessoasFamilia", 0) >= 5:
-        score += peso_familia
-
     # Sexo feminino
     if row.get("sex_final") == "Feminino":
         score += peso_sexo
 
     # Jovens até 29 anos
-    idade = row.get("idade")
+    idade = row.get("idade_final")
     if idade is not None:
         if isinstance(idade, (int, float)) and idade <= 29:
             score += peso_idade
