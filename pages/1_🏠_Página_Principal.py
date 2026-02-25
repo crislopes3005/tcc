@@ -370,8 +370,10 @@ with col_grafico:
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# MAPA POR GRANDES REGIÕES (SEM REQUESTS)
+# MAPA DO BRASIL - GRANDES REGIÕES (COROPLÉTICO REAL)
 # =========================
+
+import json
 
 st.divider()
 
@@ -381,15 +383,15 @@ with col_texto:
     st.markdown("""
 ### Distribuição Regional
 
-O mapa representa a intensidade da participação por grandes regiões,
-permitindo visualizar a concentração territorial da representatividade.
+O mapa coroplético evidencia a intensidade da participação
+por grandes regiões do Brasil, reforçando a dimensão territorial
+da representatividade.
 """)
 
 with col_grafico:
 
     df_mapa = df_participantes.copy()
 
-    # Padronizar nomes
     mapa_regioes = {
         "N": "Norte",
         "NE": "Nordeste",
@@ -403,33 +405,28 @@ with col_grafico:
     contagem = df_mapa["regiao_nome"].value_counts().reset_index()
     contagem.columns = ["Regiao", "Participantes"]
 
-    # Coordenadas centrais aproximadas das regiões
-    coordenadas = {
-        "Norte": (-3, -60),
-        "Nordeste": (-10, -40),
-        "Centro-Oeste": (-15, -55),
-        "Sudeste": (-20, -45),
-        "Sul": (-27, -50)
+    # GeoJSON simplificado das 5 regiões (embutido)
+    geojson = {
+        "type": "FeatureCollection",
+        "features": [
+            {"type": "Feature","properties": {"nome": "Norte"},"geometry": {"type": "Polygon","coordinates": [[[-74,-7],[-74,5],[-50,5],[-50,-7],[-74,-7]]]}},
+            {"type": "Feature","properties": {"nome": "Nordeste"},"geometry": {"type": "Polygon","coordinates": [[[-50,-20],[-50,5],[-34,5],[-34,-20],[-50,-20]]]}},
+            {"type": "Feature","properties": {"nome": "Centro-Oeste"},"geometry": {"type": "Polygon","coordinates": [[[-60,-25],[-60,-7],[-45,-7],[-45,-25],[-60,-25]]]}},
+            {"type": "Feature","properties": {"nome": "Sudeste"},"geometry": {"type": "Polygon","coordinates": [[[-50,-30],[-50,-15],[-39,-15],[-39,-30],[-50,-30]]]}},
+            {"type": "Feature","properties": {"nome": "Sul"},"geometry": {"type": "Polygon","coordinates": [[[-58,-35],[-58,-25],[-48,-25],[-48,-35],[-58,-35]]]}}
+        ]
     }
 
-    contagem["lat"] = contagem["Regiao"].map(lambda x: coordenadas[x][0])
-    contagem["lon"] = contagem["Regiao"].map(lambda x: coordenadas[x][1])
-
-    fig = px.scatter_geo(
+    fig = px.choropleth(
         contagem,
-        lat="lat",
-        lon="lon",
-        size="Participantes",
+        geojson=geojson,
+        locations="Regiao",
+        featureidkey="properties.nome",
         color="Participantes",
-        hover_name="Regiao",
-        scope="south america",
         color_continuous_scale="Blues",
-        projection="mercator"
+        scope="south america"
     )
 
-    fig.update_geos(
-        fitbounds="locations",
-        visible=False
-    )
+    fig.update_geos(fitbounds="locations", visible=False)
 
     st.plotly_chart(fig, use_container_width=True)
