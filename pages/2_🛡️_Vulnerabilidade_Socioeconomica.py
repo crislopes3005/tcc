@@ -101,7 +101,7 @@ if df_vulneraveis.empty:
     st.stop()
 
 # ==========================================================
-# FUNÇÃO BARRA HORIZONTAL (DECRESCENTE + %)
+# FUNÇÃO BARRA HORIZONTAL (OCUPAÇÃO E GPTE)
 # ==========================================================
 def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
 
@@ -113,8 +113,6 @@ def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
     with col_grafico:
         contagem = df_base[coluna].value_counts().reset_index()
         contagem.columns = ["Categoria", "Participantes"]
-
-        # 🔹 Ordem decrescente (maior primeiro)
         contagem = contagem.sort_values("Participantes", ascending=False)
 
         total = contagem["Participantes"].sum()
@@ -139,13 +137,56 @@ def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
             text="label"
         )
 
-        # 🔹 Manter maior no topo
         fig.update_layout(
             showlegend=False,
-            yaxis=dict(
-                categoryorder="array",
-                categoryarray=contagem["Categoria"]
-            )
+            yaxis=dict(categoryorder="array", categoryarray=contagem["Categoria"])
+        )
+
+        fig.update_traces(textposition="outside")
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    st.divider()
+
+# ==========================================================
+# FUNÇÃO BARRA VERTICAL
+# ==========================================================
+def barra_vertical(df_base, coluna, destaques, titulo, descricao):
+
+    col_texto, col_grafico = st.columns([1, 2])
+
+    with col_texto:
+        st.markdown(f"### {titulo}\n\n{descricao}")
+
+    with col_grafico:
+        contagem = df_base[coluna].value_counts().reset_index()
+        contagem.columns = ["Categoria", "Participantes"]
+        contagem = contagem.sort_values("Participantes", ascending=False)
+
+        total = contagem["Participantes"].sum()
+        contagem["Percentual"] = (contagem["Participantes"] / total * 100).round(1)
+
+        contagem["label"] = (
+            contagem["Participantes"].astype(str) +
+            " (" + contagem["Percentual"].astype(str) + "%)"
+        )
+
+        contagem["cor"] = contagem["Categoria"].apply(
+            lambda x: "#5B7C99" if x in destaques else "#D3D3D3"
+        )
+
+        fig = px.bar(
+            contagem,
+            x="Categoria",
+            y="Participantes",
+            color="cor",
+            color_discrete_map="identity",
+            text="label"
+        )
+
+        fig.update_layout(
+            showlegend=False,
+            xaxis=dict(categoryorder="total descending")
         )
 
         fig.update_traces(textposition="outside")
@@ -284,7 +325,7 @@ st.divider()
 # ==========================================================
 # 3️⃣ RAÇA
 # ==========================================================
-barra_horizontal(
+barra_vertical(
     df_vulneraveis,
     "racaCor",
     ["Preta", "Parda", "Indígena"],
@@ -335,7 +376,7 @@ há concentração de perfis com maior proximidade institucional."""
 # ==========================================================
 # 6️⃣ RENDA
 # ==========================================================
-barra_horizontal(
+barra_vertical(
     df_vulneraveis,
     "faixaRendaFamiliarPerCapita",
     ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
@@ -351,7 +392,7 @@ alcança indivíduos em situação de pobreza ou extrema pobreza."""
 # ==========================================================
 # 7️⃣ REGIÃO
 # ==========================================================
-barra_horizontal(
+barra_vertical(
     df_vulneraveis,
     "regiao",
     ["N", "NE", "Norte", "Nordeste"],
