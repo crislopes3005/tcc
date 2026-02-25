@@ -25,8 +25,9 @@ df = st.session_state["df"].copy()
 st.title("Aplicação do Índice Ponderado de Representatividade")
 
 st.markdown("""
-Aplicação do Índice Ponderado de Representatividade com modelo
-multiplicativo, inspirado na lógica de agregação do IPOA.
+Aplicação do Índice Ponderado de Representatividade com agregação linear,
+permitindo simular cenários alternativos de priorização com base
+em critérios de vulnerabilidade socioeconômica.
 """)
 
 st.divider()
@@ -36,7 +37,7 @@ st.divider()
 # =========================
 st.sidebar.header("⚖️ Pesos das Características")
 
-peso_pbf = st.sidebar.slider("Programa Bolsa Família (Cadastrado)", 0.0, 5.0, 2.0)
+peso_pbf = st.sidebar.slider("Programa Bolsa Família", 0.0, 5.0, 2.0)
 peso_renda = st.sidebar.slider("Baixa Renda per capita", 0.0, 5.0, 2.0)
 peso_raca = st.sidebar.slider("Raça Preta/Parda/Indígena", 0.0, 5.0, 1.0)
 peso_gpte = st.sidebar.slider("GPTE", 0.0, 5.0, 1.5)
@@ -51,7 +52,7 @@ def calcular_ipr(row):
 
     score = 0
 
-    # Programa Bolsa Família
+    # Programa Bolsa Família (robusto)
     valor_pbf = row.get("familiaBeneficiariaPBF")
     if pd.notnull(valor_pbf):
         if str(valor_pbf).strip().lower() in ["true", "sim", "1"]:
@@ -80,94 +81,29 @@ def calcular_ipr(row):
     if row.get("sex_final") == "Feminino":
         score += peso_sexo
 
-    # Jovens até 29
+    # Jovens até 29 anos
     idade = row.get("idade_final")
     if isinstance(idade, (int, float)) and idade <= 29:
         score += peso_idade
 
     return score
 
+
 df["IPR"] = df.apply(calcular_ipr, axis=1)
 
 st.divider()
 
 # =========================
-# RANKING
+# RANKING COMPARATIVO
 # =========================
-st.subheader("Ranking de Propostas pelo Índice Multiplicativo")
-
-df_ranking = df.sort_values(
-    by="IPR",
-    ascending=False
-)[
-    ["id_x", "titulo", "votos", "IPR"]
-]
-
-st.dataframe(df_ranking.head(20), use_container_width=True)
-
-st.divider()
-
-# =========================
-# COMPARAÇÃO COM VOTOS
-# =========================
-st.subheader("Comparação: Votos vs Índice")
-
-col1, col2 = st.columns(2)
-
-with col1:
-    st.write("Top 10 por votos")
-    st.dataframe(
-        df.sort_values(by="votos", ascending=False)[
-            ["id_x", "titulo", "votos"]
-        ].head(10),
-        use_container_width=True
-    )
-
-with col2:
-    st.write("Top 10 por IPR")
-    st.dataframe(
-        df.sort_values(by="IPR", ascending=False)[
-            ["id_x", "titulo", "IPR"]
-        ].head(10),
-        use_container_width=True
-    )
-
-st.divider()
-
-st.markdown("""
-### Interpretação
-
-O índice ponderado permite simular mecanismos alternativos de priorização
-baseados em critérios de vulnerabilidade socioeconômica.
-
-A alteração dos pesos modifica a hierarquia das propostas,
-permitindo avaliar diferentes cenários de política pública.
-""")
-
-st.divider()
-st.subheader("Autora do projeto")
-st.write("Cristiane Lopes de Assis")
-
-# =========================
-# RANKING COM VARIAÇÃO DE POSIÇÃO
-# =========================
-
 st.subheader("Ranking Comparativo: Votos vs Índice")
 
 # Ranking por votos
-ranking_votos = (
-    df.sort_values(by="votos", ascending=False)
-      .reset_index(drop=True)
-)
-
+ranking_votos = df.sort_values(by="votos", ascending=False).reset_index(drop=True)
 ranking_votos["pos_votos"] = ranking_votos.index + 1
 
 # Ranking por IPR
-ranking_ipr = (
-    df.sort_values(by="IPR", ascending=False)
-      .reset_index(drop=True)
-)
-
+ranking_ipr = df.sort_values(by="IPR", ascending=False).reset_index(drop=True)
 ranking_ipr["pos_ipr"] = ranking_ipr.index + 1
 
 # Merge
@@ -179,7 +115,7 @@ df_rank = df.merge(
     on="id_x"
 )
 
-# Calcular variação
+# Δ posição
 df_rank["Δ posição"] = df_rank["pos_votos"] - df_rank["pos_ipr"]
 
 # Ordenar pelo IPR
@@ -193,9 +129,8 @@ tabela_final = df_rank[
 ].head(20)
 
 # =========================
-# VISUALIZAÇÃO ESTILIZADA
+# FUNÇÃO PARA COLORIR Δ
 # =========================
-
 def cor_delta(val):
     if val > 0:
         return "color: green; font-weight: bold;"
@@ -204,6 +139,9 @@ def cor_delta(val):
     else:
         return "color: gray;"
 
+# =========================
+# TABELA ESTILIZADA
+# =========================
 st.dataframe(
     tabela_final.style
         .format({
@@ -211,6 +149,39 @@ st.dataframe(
             "votos": "{:,.0f}"
         })
         .background_gradient(subset=["IPR"], cmap="Blues")
+        .background_gradient(subset=["votos"], cmap="Greys")
         .applymap(cor_delta, subset=["Δ posição"]),
     use_container_width=True
 )
+
+st.divider()
+
+# =========================
+# RESUMO ANALÍTICO
+# =========================
+
+subiram = (df_rank["Δ posição"] > 0).sum()
+cairam = (df_rank["Δ posição"] < 0).sum()
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.metric("Propostas que subiram no ranking", subiram)
+
+with col2:
+    st.metric("Propostas que caíram no ranking", cairam)
+
+st.markdown("""
+### Interpretação
+
+A variação de posição evidencia o impacto da incorporação de critérios
+socioeconômicos na priorização das propostas.
+
+Observa-se que a introdução do índice altera a hierarquia originalmente
+baseada apenas em votos, permitindo simular cenários de priorização
+orientados por critérios de equidade e vulnerabilidade social.
+""")
+
+st.divider()
+st.subheader("Autora do projeto")
+st.write("Cristiane Lopes de Assis")
