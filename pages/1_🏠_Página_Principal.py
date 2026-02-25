@@ -273,39 +273,37 @@ with col_grafico:
     st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# MAPA DO BRASIL POR UF
+# MAPA DO BRASIL POR UF (FUNCIONA)
 # =========================
+
+import json
+import requests
 
 st.divider()
 st.subheader("Distribuição Territorial dos Participantes")
 
+# Contagem por UF
 df_mapa = df_participantes.copy()
 
 contagem = df_mapa["siglaUf"].value_counts().reset_index()
 contagem.columns = ["UF", "Participantes"]
 
+# GeoJSON oficial dos estados do Brasil
+url = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/brazil-states.geojson"
+geojson = requests.get(url).json()
+
 fig = px.choropleth(
     contagem,
+    geojson=geojson,
     locations="UF",
-    locationmode="geojson-id",
+    featureidkey="properties.sigla",
     color="Participantes",
-    scope="south america",
     color_continuous_scale="Blues"
 )
 
 fig.update_geos(
-    visible=False,
-    resolution=50,
-    showcountries=True,
-    countrycolor="Black"
-)
-
-fig.update_layout(
-    geo=dict(
-        scope="south america",
-        center={"lat": -14, "lon": -52},
-        projection_scale=3.5
-    )
+    fitbounds="locations",
+    visible=False
 )
 
 st.plotly_chart(fig, use_container_width=True)
