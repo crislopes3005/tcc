@@ -34,13 +34,12 @@ critérios de vulnerabilidade socioeconômica.
 st.divider()
 
 # =========================
-# FILTRO POR PROCESSO
+# FILTROS
 # =========================
 st.sidebar.header("🔎 Filtros")
 
 df_filtrado = df.copy()
 
-# Processo
 lista_processos = df["processo"].dropna().unique().tolist()
 lista_processos.insert(0, "Todos")
 
@@ -52,11 +51,21 @@ processo_selecionado = st.sidebar.selectbox(
 if processo_selecionado != "Todos":
     df_filtrado = df_filtrado[df_filtrado["processo"] == processo_selecionado]
 
+lista_status = df_filtrado["state"].dropna().unique().tolist()
+lista_status.insert(0, "Todos")
+
+status_selecionado = st.sidebar.selectbox(
+    "Selecione o estado da proposta:",
+    lista_status
+)
+
+if status_selecionado != "Todos":
+    df_filtrado = df_filtrado[df_filtrado["state"] == status_selecionado]
 
 st.divider()
 
 # =========================
-# DEFINIÇÃO DOS PESOS
+# PESOS
 # =========================
 st.sidebar.header("⚖️ Pesos das Características")
 
@@ -69,7 +78,7 @@ peso_sexo = st.sidebar.slider("Sexo feminino", 0.0, 5.0, 1.0)
 peso_idade = st.sidebar.slider("Jovens (até 29 anos)", 0.0, 5.0, 1.0)
 
 # =========================
-# FUNÇÃO DE CÁLCULO
+# FUNÇÃO IPR
 # =========================
 def calcular_ipr(row):
 
@@ -139,7 +148,6 @@ st.divider()
 # =========================
 # RANKINGS BASE
 # =========================
-
 ranking_votos = df_filtrado.sort_values(by="votos", ascending=False).reset_index(drop=True)
 ranking_votos["pos_votos"] = ranking_votos.index + 1
 
@@ -157,18 +165,19 @@ df_rank = df_filtrado.merge(
 df_rank["Δ posição"] = df_rank["pos_votos"] - df_rank["pos_ipr"]
 
 df_rank = df_rank.sort_values(by=criterio_final, ascending=False)
-
 df_rank.index = range(1, len(df_rank) + 1)
 df_rank.index.name = "Posição"
 
 # =========================
 # TABELA FINAL
 # =========================
-
 tabela_final = df_rank[
     ["titulo", "processo", "eixo", "votos", "IPR", "pos_votos", "Δ posição"]
-].head(20)
+].head(20).copy()
 
+# =========================
+# SETAS Δ
+# =========================
 def seta_delta(valor):
     if valor > 0:
         return f"▲ {valor}"
@@ -178,20 +187,30 @@ def seta_delta(valor):
         return "—"
 
 tabela_final["Δ posição"] = tabela_final["Δ posição"].apply(seta_delta)
+
+# =========================
+# CORES Δ
+# =========================
 def cor_delta(val):
-    if val > 0:
+    if "▲" in str(val):
         return "color: #2E7D5A; font-weight: bold;"
-    elif val < 0:
+    elif "▼" in str(val):
         return "color: #B04A4A; font-weight: bold;"
     else:
         return "color: #6E6E6E;"
-        
-st.subheader("Ranking Comparativo")
 
+# =========================
+# COLORMAP PERSONALIZADO
+# =========================
 custom_blue = mcolors.LinearSegmentedColormap.from_list(
     "custom_blue",
     ["#FFFFFF", "#5B7C99"]
 )
+
+# =========================
+# TABELA ESTILIZADA
+# =========================
+st.subheader("Ranking Comparativo")
 
 st.dataframe(
     tabela_final.style
@@ -210,7 +229,6 @@ st.divider()
 # =========================
 # RESUMO
 # =========================
-
 subiram = (df_rank["Δ posição"] > 0).sum()
 cairam = (df_rank["Δ posição"] < 0).sum()
 
@@ -221,6 +239,7 @@ with col1:
 
 with col2:
     st.metric("Propostas que caíram no ranking", cairam)
+
 
 st.markdown("""
 ### Interpretação
