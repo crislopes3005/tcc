@@ -171,11 +171,11 @@ tabela_final = df_rank[
 
 def cor_delta(val):
     if val > 0:
-        return "color: green; font-weight: bold;"
+        return "color: #6E8B74; font-weight: bold;"  # verde acinzentado
     elif val < 0:
-        return "color: red; font-weight: bold;"
+        return "color: #A06A6A; font-weight: bold;"  # vermelho acinzentado
     else:
-        return "color: gray;"
+        return "color: #7A7A7A;"  # cinza neutro
 
 st.subheader("Ranking Comparativo")
 
