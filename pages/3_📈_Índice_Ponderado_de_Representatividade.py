@@ -51,9 +51,11 @@ def calcular_ipr(row):
 
     score = 0
 
-    # CadÚnico
-    if row.get("familiaBeneficiariaPBF") == "True":
-        score += peso_pbf
+    # Programa Bolsa Família
+    valor_pbf = row.get("familiaBeneficiariaPBF")
+    if pd.notnull(valor_pbf):
+        if str(valor_pbf).strip().lower() in ["true", "sim", "1"]:
+            score += peso_pbf
 
     # Baixa renda
     if row.get("faixaRendaFamiliarPerCapita") in [
@@ -78,14 +80,12 @@ def calcular_ipr(row):
     if row.get("sex_final") == "Feminino":
         score += peso_sexo
 
-    # Jovens até 29 anos
+    # Jovens até 29
     idade = row.get("idade_final")
-    if idade is not None:
-        if isinstance(idade, (int, float)) and idade <= 29:
-            score += peso_idade
+    if isinstance(idade, (int, float)) and idade <= 29:
+        score += peso_idade
 
     return score
-
 
 df["IPR"] = df.apply(calcular_ipr, axis=1)
 
