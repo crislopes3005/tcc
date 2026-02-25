@@ -375,52 +375,33 @@ with col_grafico:
 
 import json
 
-st.divider()
+with open("data/regioes.geojson", "r", encoding="utf-8") as f:
+    geojson = json.load(f)
 
-col_texto, col_grafico = st.columns([1, 2])
+df_mapa = df_participantes.copy()
 
-with col_texto:
-    st.markdown("""
-### Distribuição Regional
+mapa_regioes = {
+    "N": "Norte",
+    "NE": "Nordeste",
+    "CO": "Centro-Oeste",
+    "SE": "Sudeste",
+    "S": "Sul"
+}
 
-O mapa coroplético utiliza o contorno oficial das regiões brasileiras,
-permitindo visualizar a intensidade da participação
-de forma territorialmente precisa.
-""")
+df_mapa["regiao_nome"] = df_mapa["regiao"].replace(mapa_regioes)
 
-with col_grafico:
+contagem = df_mapa["regiao_nome"].value_counts().reset_index()
+contagem.columns = ["Regiao", "Participantes"]
 
-    df_mapa = df_participantes.copy()
+fig = px.choropleth(
+    contagem,
+    geojson=geojson,
+    locations="Regiao",
+    featureidkey="properties.nome",
+    color="Participantes",
+    color_continuous_scale="Blues"
+)
 
-    mapa_regioes = {
-        "N": "Norte",
-        "NE": "Nordeste",
-        "CO": "Centro-Oeste",
-        "SE": "Sudeste",
-        "S": "Sul"
-    }
+fig.update_geos(fitbounds="locations", visible=False)
 
-    df_mapa["regiao_nome"] = df_mapa["regiao"].replace(mapa_regioes)
-
-    contagem = df_mapa["regiao_nome"].value_counts().reset_index()
-    contagem.columns = ["Regiao", "Participantes"]
-
-    # 🔹 Ler geojson local
-    with open("data/regioes.geojson", "r", encoding="utf-8") as f:
-        geojson = json.load(f)
-
-    fig = px.choropleth(
-        contagem,
-        geojson=geojson,
-        locations="Regiao",
-        featureidkey="properties.nome",
-        color="Participantes",
-        color_continuous_scale="Blues"
-    )
-
-    fig.update_geos(
-        fitbounds="locations",
-        visible=False
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
