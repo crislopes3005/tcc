@@ -153,7 +153,7 @@ col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
-### ### Estrutura Etária por Gênero
+### Estrutura Etária por Gênero
 
 A visualização em formato de pirâmide permite analisar a composição
 etária e de gênero dos participantes, identificando possíveis
@@ -295,7 +295,7 @@ col_texto, col_grafico = st.columns([1, 2])
 
 with col_texto:
     st.markdown("""
-### ### Perfil de Ocupação
+### Perfil de Ocupação
 
 A distribuição ocupacional permite observar o perfil socioeconômico
 dos participantes e identificar possíveis concentrações institucionais.
