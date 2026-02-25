@@ -3,6 +3,7 @@
 # =========================
 import streamlit as st
 import pandas as pd
+import matplotlib.colors as mcolors
 
 # =========================
 # CONFIG
@@ -178,13 +179,18 @@ def cor_delta(val):
 
 st.subheader("Ranking Comparativo")
 
+custom_blue = mcolors.LinearSegmentedColormap.from_list(
+    "custom_blue",
+    ["#FFFFFF", "#5B7C99"]
+)
+
 st.dataframe(
     tabela_final.style
         .format({
             "IPR": "{:.2f}",
             "votos": "{:,.0f}"
         })
-        .background_gradient(subset=["IPR"], cmap="Blues")
+        .background_gradient(subset=["IPR"], cmap=custom_blue)
         .background_gradient(subset=["votos"], cmap="Greys")
         .applymap(cor_delta, subset=["Δ posição"]),
     use_container_width=True
