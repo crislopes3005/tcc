@@ -289,13 +289,13 @@ barra_horizontal(
     "racaCor",
     ["Preta", "Parda", "Indígena"],
     "Raça/Cor",
-    "O destaque a participantes autodeclarados pretos, pardos e indígenas
+    """O destaque a participantes autodeclarados pretos, pardos e indígenas
 dialoga com a literatura sobre desigualdades raciais estruturais
 no Brasil.
 
 A análise busca verificar se grupos historicamente marginalizados
 estão representados nos processos participativos,
-especialmente entre aqueles identificados como vulneráveis."
+especialmente entre aqueles identificados como vulneráveis."""
 )
 
 # ==========================================================
@@ -306,13 +306,13 @@ barra_horizontal(
     "gpte",
     ["Indígena", "Quilombola"],
     "Grupo Populacional Tradicional ou Específico (GPTE)",
-    "A presença de povos indígenas, quilombolas e outros grupos
+    """A presença de povos indígenas, quilombolas e outros grupos
 tradicionais é analisada como indicador de inclusão de
 segmentos historicamente excluídos das arenas formais
 de deliberação pública.
 
 O destaque permite observar se a participação digital
-contribui para ampliar a voz desses grupos."
+contribui para ampliar a voz desses grupos."""
 )
 
 # ==========================================================
@@ -323,13 +323,13 @@ barra_horizontal(
     "ocupacao_grupo",
     ["servidor_publico", "empresa_publica"],
     "Perfil de Ocupação",
-    "A distribuição ocupacional dos participantes vulneráveis
+    """A distribuição ocupacional dos participantes vulneráveis
 permite analisar a relação entre inserção produtiva
 e participação social.
 
 O destaque a categorias associadas ao setor público
 possibilita avaliar se mesmo entre os vulneráveis
-há concentração de perfis com maior proximidade institucional."
+há concentração de perfis com maior proximidade institucional."""
 )
 
 # ==========================================================
@@ -340,12 +340,12 @@ barra_horizontal(
     "faixaRendaFamiliarPerCapita",
     ["De 0 até R$ 109", "De R$ 109,01 até R$ 218"],
     "Renda Familiar per capita",
-    "O destaque às faixas de renda até R$ 218 evidencia
+    """O destaque às faixas de renda até R$ 218 evidencia
 os segmentos em condição de maior restrição econômica.
 
 A análise permite compreender a intensidade da vulnerabilidade
 entre os participantes e avaliar se a participação digital
-alcança indivíduos em situação de pobreza ou extrema pobreza."
+alcança indivíduos em situação de pobreza ou extrema pobreza."""
 )
 
 # ==========================================================
@@ -356,10 +356,10 @@ barra_horizontal(
     "regiao",
     ["N", "NE", "Norte", "Nordeste"],
     "Distribuição Regional dos Participantes Vulneráveis",
-    "A análise territorial dos participantes cadastrados no CadÚnico
+    """A análise territorial dos participantes cadastrados no CadÚnico
 permite observar a concentração regional da vulnerabilidade.
 
 O destaque às regiões Norte e Nordeste reforça o debate
 sobre desigualdades estruturais e inclusão territorial
-nos processos participativos digitais."
+nos processos participativos digitais."""
 )
