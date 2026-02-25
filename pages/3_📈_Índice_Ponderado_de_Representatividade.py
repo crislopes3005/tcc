@@ -26,8 +26,8 @@ st.title("Aplicação do Índice Ponderado de Representatividade")
 
 st.markdown("""
 Aplicação do Índice Ponderado de Representatividade com agregação linear,
-permitindo simular cenários alternativos de priorização com base
-em critérios de vulnerabilidade socioeconômica.
+permitindo simular cenários alternativos de priorização baseados em
+critérios de vulnerabilidade socioeconômica.
 """)
 
 st.divider()
@@ -81,7 +81,7 @@ def calcular_ipr(row):
     if row.get("sex_final") == "Feminino":
         score += peso_sexo
 
-    # Jovens até 29 anos
+    # Jovens até 29
     idade = row.get("idade_final")
     if isinstance(idade, (int, float)) and idade <= 29:
         score += peso_idade
@@ -94,19 +94,46 @@ df["IPR"] = df.apply(calcular_ipr, axis=1)
 st.divider()
 
 # =========================
-# RANKING COMPARATIVO
+# ESCOLHA DO EIXO DE ORDENAÇÃO
 # =========================
-st.subheader("Ranking Comparativo: Votos vs Índice")
 
-# Ranking por votos
+st.subheader("Configuração do Ranking")
+
+soma_pesos = (
+    peso_pbf + peso_renda + peso_raca +
+    peso_gpte + peso_regiao + peso_sexo + peso_idade
+)
+
+criterio = st.radio(
+    "Escolha o eixo de ordenação:",
+    ["Automático", "Votos", "Índice (IPR)"],
+    horizontal=True
+)
+
+if criterio == "Automático":
+    if soma_pesos == 0:
+        criterio_final = "votos"
+    else:
+        criterio_final = "IPR"
+elif criterio == "Votos":
+    criterio_final = "votos"
+else:
+    criterio_final = "IPR"
+
+st.markdown(f"**Eixo aplicado:** {criterio_final}")
+
+st.divider()
+
+# =========================
+# RANKINGS BASE
+# =========================
+
 ranking_votos = df.sort_values(by="votos", ascending=False).reset_index(drop=True)
 ranking_votos["pos_votos"] = ranking_votos.index + 1
 
-# Ranking por IPR
 ranking_ipr = df.sort_values(by="IPR", ascending=False).reset_index(drop=True)
 ranking_ipr["pos_ipr"] = ranking_ipr.index + 1
 
-# Merge
 df_rank = df.merge(
     ranking_votos[["id_x", "pos_votos"]],
     on="id_x"
@@ -115,22 +142,26 @@ df_rank = df.merge(
     on="id_x"
 )
 
-# Δ posição
 df_rank["Δ posição"] = df_rank["pos_votos"] - df_rank["pos_ipr"]
 
-# Ordenar pelo IPR
-df_rank = df_rank.sort_values("pos_ipr")
+# Ordenação dinâmica
+df_rank = df_rank.sort_values(by=criterio_final, ascending=False)
 
-df_rank.index = df_rank["pos_ipr"]
-df_rank.index.name = "Posição IPR"
+df_rank.index = range(1, len(df_rank) + 1)
+df_rank.index.name = "Posição"
+
+# =========================
+# TABELA FINAL (COM EIXO)
+# =========================
 
 tabela_final = df_rank[
-    ["titulo", "votos", "IPR", "pos_votos", "Δ posição"]
+    ["titulo", "eixo", "votos", "IPR", "pos_votos", "Δ posição"]
 ].head(20)
 
 # =========================
-# FUNÇÃO PARA COLORIR Δ
+# ESTILIZAÇÃO
 # =========================
+
 def cor_delta(val):
     if val > 0:
         return "color: green; font-weight: bold;"
@@ -139,9 +170,8 @@ def cor_delta(val):
     else:
         return "color: gray;"
 
-# =========================
-# TABELA ESTILIZADA
-# =========================
+st.subheader("Ranking Comparativo")
+
 st.dataframe(
     tabela_final.style
         .format({
@@ -177,9 +207,10 @@ st.markdown("""
 A variação de posição evidencia o impacto da incorporação de critérios
 socioeconômicos na priorização das propostas.
 
-Observa-se que a introdução do índice altera a hierarquia originalmente
-baseada apenas em votos, permitindo simular cenários de priorização
-orientados por critérios de equidade e vulnerabilidade social.
+Quando nenhum peso é aplicado, a ordenação reproduz a lógica majoritária
+baseada exclusivamente em votos. Ao ativar pesos, observa-se alteração
+na hierarquia das propostas, permitindo simular cenários de priorização
+orientados por equidade e vulnerabilidade social.
 """)
 
 st.divider()
