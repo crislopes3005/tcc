@@ -368,3 +368,60 @@ with col_grafico:
     fig.update_traces(textposition="outside")
 
     st.plotly_chart(fig, use_container_width=True)
+
+# =========================
+# MAPA DO BRASIL - GRANDES REGIÕES
+# =========================
+
+import json
+import requests
+
+st.divider()
+
+col_texto, col_grafico = st.columns([1, 2])
+
+with col_texto:
+    st.markdown("""
+### Distribuição Regional
+
+O mapa apresenta a distribuição territorial dos participantes
+por grandes regiões do Brasil.
+
+A visualização espacial permite avaliar a concentração regional
+da participação e reforça a dimensão territorial da representatividade.
+""")
+
+with col_grafico:
+
+    # Padronizar nomes
+    df_mapa = df_participantes.copy()
+
+    mapa_regioes = {
+        "N": "Norte",
+        "NE": "Nordeste",
+        "CO": "Centro-Oeste",
+        "SE": "Sudeste",
+        "S": "Sul"
+    }
+
+    df_mapa["regiao_nome"] = df_mapa["regiao"].replace(mapa_regioes)
+
+    contagem = df_mapa["regiao_nome"].value_counts().reset_index()
+    contagem.columns = ["Regiao", "Participantes"]
+
+    # GeoJSON simplificado das regiões
+    url = "https://raw.githubusercontent.com/tbrugz/geodata-br/master/geojson/geojs-100-mun-regioes.json"
+    geojson = requests.get(url).json()
+
+    fig = px.choropleth(
+        contagem,
+        geojson=geojson,
+        locations="Regiao",
+        featureidkey="properties.nome",
+        color="Participantes",
+        color_continuous_scale="Blues"
+    )
+
+    fig.update_geos(fitbounds="locations", visible=False)
+
+    st.plotly_chart(fig, use_container_width=True)
