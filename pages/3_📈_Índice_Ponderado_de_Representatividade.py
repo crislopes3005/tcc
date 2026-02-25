@@ -171,12 +171,12 @@ tabela_final = df_rank[
 
 def cor_delta(val):
     if val > 0:
-        return "color: #6E8B74; font-weight: bold;"  # verde acinzentado
+        return "color: #2E7D5A; font-weight: bold;"
     elif val < 0:
-        return "color: #A06A6A; font-weight: bold;"  # vermelho acinzentado
+        return "color: #B04A4A; font-weight: bold;"
     else:
-        return "color: #7A7A7A;"  # cinza neutro
-
+        return "color: #6E6E6E;"
+        
 st.subheader("Ranking Comparativo")
 
 custom_blue = mcolors.LinearSegmentedColormap.from_list(
