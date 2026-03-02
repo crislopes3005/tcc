@@ -144,11 +144,11 @@ ranking_ipr = df_filtrado.sort_values(by="IPR", ascending=False).reset_index(dro
 ranking_ipr["pos_ipr"] = ranking_ipr.index + 1
 
 df_rank = df_filtrado.merge(
-    ranking_votos[["id_x", "pos_votos"]],
-    on="id_x"
+    ranking_votos[["id_y", "pos_votos"]],
+    on="id_y"
 ).merge(
-    ranking_ipr[["id_x", "pos_ipr"]],
-    on="id_x"
+    ranking_ipr[["id_y", "pos_ipr"]],
+    on="id_y"
 )
 
 df_rank["Δ posição"] = df_rank["pos_votos"] - df_rank["pos_ipr"]
