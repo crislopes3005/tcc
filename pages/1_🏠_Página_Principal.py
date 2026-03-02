@@ -87,7 +87,7 @@ st.divider()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.metric("Número de propostas recebidas", df_filtrado['id_x'].count())
+    st.metric("Número de propostas recebidas", df_filtrado['id_y'].count())
 
 with col2:
     st.metric("Número de proponentes distintos", df_filtrado['id_autor'].nunique())
