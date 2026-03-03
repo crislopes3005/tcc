@@ -58,22 +58,24 @@ st.markdown("""
    entre votos e índice, permitindo comparar os cenários.
 """)
 st.markdown("""
-## Como aplicar o índice?
+## Como interpretar os resultados?
 
-1. Utilize os controles na barra lateral para definir o peso
-   de cada característica socioeconômica.
-   
-2. Quanto maior o peso atribuído, maior será a influência
-   daquela característica na pontuação final.
+- A coluna **IPR** mostra a pontuação obtida a partir
+  dos critérios selecionados.
 
-3. Se todos os pesos forem definidos como zero,
-   a ordenação será feita apenas pelo número de votos.
+- A coluna **Δ posição** indica quanto a proposta subiu (▲)
+  ou caiu (▼) no ranking em relação à ordenação por votos.
 
-4. Caso algum peso seja ativado, o ranking passará
-   a considerar os critérios de vulnerabilidade definidos.
+- Se uma proposta sobe no ranking,
+  significa que ela é apresentada por grupos
+  com maior vulnerabilidade segundo os critérios escolhidos.
 
-5. É possível escolher manualmente o eixo de ordenação
-   entre votos e índice, permitindo comparar os cenários.
+- Se ela cai, significa que seu desempenho depende mais
+  do volume de votos do que das características socioeconômicas.
+
+Assim, o IPR permite simular diferentes cenários de política pública,
+comparando uma lógica puramente majoritária com uma lógica orientada
+por equidade social.
 """)
 
 # =========================
