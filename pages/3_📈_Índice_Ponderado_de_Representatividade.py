@@ -148,7 +148,6 @@ def calcular_ipr(row):
 
 df_filtrado["IPR"] = df_filtrado.apply(calcular_ipr, axis=1)
 
-st.divider()
 
 # =========================
 # ESCOLHA DO EIXO
@@ -272,18 +271,3 @@ with col1:
 with col2:
     st.metric("Propostas que caíram no ranking", cairam)
 
-
-st.markdown("""
-### Interpretação
-
-O filtro por processo permite analisar separadamente diferentes
-arenas participativas.
-
-A alteração dos pesos modifica a hierarquia das propostas,
-evidenciando como critérios de vulnerabilidade socioeconômica
-podem impactar a priorização final.
-""")
-
-st.divider()
-st.subheader("Autora do projeto")
-st.write("Cristiane Lopes de Assis")
