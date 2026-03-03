@@ -24,14 +24,57 @@ if "df" not in st.session_state:
 df = st.session_state["df"].copy()
 
 st.title("Aplicação do Índice Ponderado de Representatividade")
-
 st.markdown("""
-Aplicação do Índice Ponderado de Representatividade com agregação linear,
-permitindo simular cenários alternativos de priorização baseados em
-critérios de vulnerabilidade socioeconômica.
-""")
+## O que é o Índice Ponderado de Representatividade?
 
-st.divider()
+O Índice Ponderado de Representatividade (IPR) é uma ferramenta de simulação
+que permite testar diferentes critérios de priorização das propostas.
+
+Enquanto a ordenação tradicional considera apenas o número de votos,
+o IPR incorpora características socioeconômicas dos proponentes,
+como renda, raça/cor, pertencimento a grupos tradicionais,
+região, sexo e idade.
+
+O objetivo não é substituir o critério majoritário,
+mas demonstrar como a inclusão de critérios de equidade
+pode alterar a hierarquia final das propostas.
+""")
+st.markdown("""
+## Como aplicar o índice?
+
+1. Utilize os controles na barra lateral para definir o peso
+   de cada característica socioeconômica.
+   
+2. Quanto maior o peso atribuído, maior será a influência
+   daquela característica na pontuação final.
+
+3. Se todos os pesos forem definidos como zero,
+   a ordenação será feita apenas pelo número de votos.
+
+4. Caso algum peso seja ativado, o ranking passará
+   a considerar os critérios de vulnerabilidade definidos.
+
+5. É possível escolher manualmente o eixo de ordenação
+   entre votos e índice, permitindo comparar os cenários.
+""")
+st.markdown("""
+## Como aplicar o índice?
+
+1. Utilize os controles na barra lateral para definir o peso
+   de cada característica socioeconômica.
+   
+2. Quanto maior o peso atribuído, maior será a influência
+   daquela característica na pontuação final.
+
+3. Se todos os pesos forem definidos como zero,
+   a ordenação será feita apenas pelo número de votos.
+
+4. Caso algum peso seja ativado, o ranking passará
+   a considerar os critérios de vulnerabilidade definidos.
+
+5. É possível escolher manualmente o eixo de ordenação
+   entre votos e índice, permitindo comparar os cenários.
+""")
 
 # =========================
 # FILTROS
