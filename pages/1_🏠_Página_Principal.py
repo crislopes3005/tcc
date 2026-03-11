@@ -219,7 +219,7 @@ with col_grafico:
         }
     )
 
-    fig.update_traces(textposition="outside")
+    fig.update_traces(textposition="auto")
 
     fig.update_xaxes(
         showticklabels=False,
@@ -281,7 +281,7 @@ with col_grafico:
         xaxis=dict(categoryorder="total descending")
     )
 
-    fig.update_traces(textposition="outside")
+    fig.update_traces(textposition="auto")
 
     st.plotly_chart(fig, use_container_width=True)
 
@@ -342,6 +342,6 @@ with col_grafico:
         )
     )
 
-    fig.update_traces(textposition="outside")
+    fig.update_traces(textposition="auto")
 
     st.plotly_chart(fig, use_container_width=True)
