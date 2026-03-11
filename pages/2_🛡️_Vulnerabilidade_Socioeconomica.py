@@ -142,7 +142,7 @@ def barra_horizontal(df_base, coluna, destaques, titulo, descricao):
             yaxis=dict(categoryorder="array", categoryarray=contagem["Categoria"])
         )
 
-        fig.update_traces(textposition="outside")
+        fig.update_traces(textposition="auto")
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -189,7 +189,7 @@ def barra_vertical(df_base, coluna, destaques, titulo, descricao):
             xaxis=dict(categoryorder="total descending")
         )
 
-        fig.update_traces(textposition="outside")
+        fig.update_traces(textposition="auto")
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -315,7 +315,7 @@ with col_grafico:
         }
     )
 
-    fig.update_traces(textposition="outside")
+    fig.update_traces(textposition="auto")
     fig.update_xaxes(showticklabels=False, showgrid=False)
 
     st.plotly_chart(fig, use_container_width=True)
